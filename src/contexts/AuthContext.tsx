@@ -7,11 +7,13 @@ interface AuthContextType {
   profile: Profile | null;
   loading: boolean;
   isNewUser: boolean;
+  error: string | null;
   signUp: (email: string, password: string, fullName: string) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
   updateProfile: (updates: Partial<Profile>) => Promise<void>;
   setIsNewUser: (value: boolean) => void;
+  clearError: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -124,6 +126,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [isNewUser, setIsNewUser] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -131,11 +134,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const initializeAuth = async () => {
       try {
         console.log('Initializing auth...');
+        setError(null);
         
-        // Get initial session with increased timeout (30 seconds)
+        // Get initial session with increased timeout (45 seconds)
         const sessionPromise = supabase.auth.getSession();
         const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Connection timeout. Please check your internet connection.')), 30000)
+          setTimeout(() => reject(new Error('Connection timeout. Please check your internet connection and try refreshing the page.')), 45000)
         );
 
         const { data: { session }, error } = await Promise.race([
@@ -146,6 +150,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (error) {
           console.error('Session error:', error);
           if (mounted) {
+            setError(formatAuthError(error));
             setUser(null);
             setProfile(null);
             setLoading(false);
@@ -169,6 +174,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       } catch (error: any) {
         console.error('Auth initialization error:', error);
         if (mounted) {
+          setError(formatAuthError(error));
           setUser(null);
           setProfile(null);
           setLoading(false);
@@ -186,21 +192,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       console.log('Auth state changed:', event, session?.user?.email);
       
-      setUser(session?.user ?? null);
-      
-      if (session?.user) {
-        // Only set isNewUser flag for SIGNED_UP event
-        if (event === 'SIGNED_UP') {
-          setIsNewUser(true);
+      try {
+        setError(null);
+        setUser(session?.user ?? null);
+        
+        if (session?.user) {
+          // Only set isNewUser flag for SIGNED_UP event
+          if (event === 'SIGNED_UP') {
+            setIsNewUser(true);
+          }
+          // Fetch profile immediately when user signs in
+          await fetchProfile(session.user.id);
+        } else {
+          setProfile(null);
+          setIsNewUser(false);
         }
-        // Fetch profile immediately when user signs in
-        await fetchProfile(session.user.id);
-      } else {
-        setProfile(null);
-        setIsNewUser(false);
+        
+        setLoading(false);
+      } catch (error: any) {
+        console.error('Auth state change error:', error);
+        setError(formatAuthError(error));
+        setLoading(false);
       }
-      
-      setLoading(false);
     });
 
     return () => {
@@ -213,7 +226,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       console.log('Fetching profile for user:', userId);
       
-      // Use increased timeout (30 seconds) and maybeSingle() to handle missing profiles
+      // Use increased timeout (45 seconds) and maybeSingle() to handle missing profiles
       const profilePromise = supabase
         .from('profiles')
         .select('*')
@@ -221,7 +234,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .maybeSingle(); // Use maybeSingle() instead of single() to handle missing profiles gracefully
 
       const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Profile fetch timeout')), 30000)
+        setTimeout(() => reject(new Error('Profile fetch timeout. Please try refreshing the page.')), 45000)
       );
 
       const { data, error } = await Promise.race([
@@ -231,16 +244,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (error) {
         console.error('Error fetching profile:', error);
+        setError(formatAuthError(error));
         setProfile(null);
       } else if (data) {
         console.log('Profile fetched successfully:', data);
         setProfile(data);
+        setError(null);
       } else {
         console.log('No profile found for user, this is normal for new users');
         setProfile(null);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Profile fetch failed:', error);
+      setError(formatAuthError(error));
       setProfile(null);
     }
   };
@@ -248,6 +264,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signUp = async (email: string, password: string, fullName: string) => {
     try {
       setLoading(true);
+      setError(null);
       setIsNewUser(true); // Set flag for new user
       
       const { data, error } = await supabase.auth.signUp({
@@ -272,6 +289,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch (error: any) {
       setIsNewUser(false);
       console.error('Sign up error:', error);
+      setError(formatAuthError(error));
       throw new Error(formatAuthError(error));
     } finally {
       setLoading(false);
@@ -281,6 +299,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signIn = async (email: string, password: string) => {
     try {
       setLoading(true);
+      setError(null);
       setIsNewUser(false); // Clear flag for existing user
       console.log('Signing in user:', email);
       
@@ -305,12 +324,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch (error: any) {
       setLoading(false);
       console.error('Sign in error:', error);
+      setError(formatAuthError(error));
       throw new Error(formatAuthError(error));
     }
   };
 
   const signOut = async () => {
     try {
+      setError(null);
       setIsNewUser(false);
       const { error } = await supabase.auth.signOut();
       if (error) {
@@ -318,6 +339,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     } catch (error: any) {
       console.error('Sign out error:', error);
+      setError(formatAuthError(error));
       throw new Error(formatAuthError(error));
     }
   };
@@ -326,6 +348,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (!user) throw new Error('No user logged in');
 
     try {
+      setError(null);
       const { error } = await supabase
         .from('profiles')
         .update(updates)
@@ -339,8 +362,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       await fetchProfile(user.id);
     } catch (error: any) {
       console.error('Update profile error:', error);
+      setError(formatAuthError(error));
       throw new Error(formatAuthError(error));
     }
+  };
+
+  const clearError = () => {
+    setError(null);
   };
 
   const value = {
@@ -348,11 +376,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     profile,
     loading,
     isNewUser,
+    error,
     signUp,
     signIn,
     signOut,
     updateProfile,
     setIsNewUser,
+    clearError,
   };
 
   return (

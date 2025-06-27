@@ -37,6 +37,7 @@ const LessonView: React.FC = () => {
   const [testCompleted, setTestCompleted] = useState(false);
   const [score, setScore] = useState(0);
   const [allLessons, setAllLessons] = useState<Lesson[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (lessonId && user) {
@@ -46,6 +47,8 @@ const LessonView: React.FC = () => {
 
   const fetchLesson = async () => {
     try {
+      setError(null);
+      
       // Fetch lesson details
       const { data: lessonData, error: lessonError } = await supabase
         .from('lessons')
@@ -78,8 +81,9 @@ const LessonView: React.FC = () => {
         localStorage.setItem(`lesson_${lessonId}`, JSON.stringify(content));
       }
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching lesson:', error);
+      setError(error.message || 'Failed to load lesson');
     } finally {
       setLoading(false);
     }
@@ -107,25 +111,25 @@ const LessonView: React.FC = () => {
   };
 
   const completeTest = async () => {
-    const questions = lessonContent!.assessmentQuestions;
-    let correctAnswers = 0;
-
-    questions.forEach((question, index) => {
-      // Normalize both strings for comparison (trim whitespace and convert to lowercase)
-      const userAnswer = userAnswers[index]?.trim().toLowerCase() || '';
-      const correctAnswer = question.answer?.trim().toLowerCase() || '';
-      
-      if (userAnswer === correctAnswer) {
-        correctAnswers++;
-      }
-    });
-
-    const finalScore = Math.round((correctAnswers / questions.length) * 100);
-    setScore(finalScore);
-    setTestCompleted(true);
-
-    // Save completion to database
     try {
+      const questions = lessonContent!.assessmentQuestions;
+      let correctAnswers = 0;
+
+      questions.forEach((question, index) => {
+        // Normalize both strings for comparison (trim whitespace and convert to lowercase)
+        const userAnswer = userAnswers[index]?.trim().toLowerCase() || '';
+        const correctAnswer = question.answer?.trim().toLowerCase() || '';
+        
+        if (userAnswer === correctAnswer) {
+          correctAnswers++;
+        }
+      });
+
+      const finalScore = Math.round((correctAnswers / questions.length) * 100);
+      setScore(finalScore);
+      setTestCompleted(true);
+
+      // Save completion to database
       await supabase
         .from('lesson_completions')
         .upsert({
@@ -162,8 +166,9 @@ const LessonView: React.FC = () => {
           .eq('id', progressData.id);
       }
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving completion:', error);
+      setError('Failed to save test results. Please try again.');
     }
   };
 
@@ -172,6 +177,13 @@ const LessonView: React.FC = () => {
     let targetIndex = direction === 'next' ? currentIndex + 1 : currentIndex - 1;
     
     if (targetIndex >= 0 && targetIndex < allLessons.length) {
+      // Reset all test states when navigating to a new lesson
+      setShowTest(false);
+      setTestCompleted(false);
+      setCurrentQuestion(0);
+      setUserAnswers([]);
+      setScore(0);
+      
       navigate(`/lessons/${allLessons[targetIndex].id}`);
     }
   };
@@ -179,7 +191,26 @@ const LessonView: React.FC = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading lesson...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-12">
+        <AlertCircle className="mx-auto h-12 w-12 text-red-400" />
+        <h3 className="mt-2 text-sm font-medium text-gray-900">Error loading lesson</h3>
+        <p className="mt-1 text-sm text-gray-500">{error}</p>
+        <button 
+          onClick={fetchLesson}
+          className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+        >
+          Try Again
+        </button>
       </div>
     );
   }

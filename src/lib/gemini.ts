@@ -46,9 +46,6 @@ function cleanJsonResponse(content: string): string {
     }
   }
   
-  // Remove the problematic character replacements that were causing JSON parsing errors
-  // JSON.parse can handle standard JSON escape sequences directly
-  
   return extractedJson;
 }
 
@@ -57,6 +54,10 @@ async function makeGeminiRequest(prompt: string, timeout: number = 15000): Promi
   const timeoutId = setTimeout(() => controller.abort(), timeout);
 
   try {
+    if (!GEMINI_API_KEY) {
+      throw new Error('Gemini API key is not configured. Please check your environment variables.');
+    }
+
     const response = await fetch(GEMINI_API_URL, {
       method: 'POST',
       headers: {
@@ -77,20 +78,27 @@ async function makeGeminiRequest(prompt: string, timeout: number = 15000): Promi
 
     if (!response.ok) {
       const errorText = await response.text();
-      throw new Error(`API request failed: ${response.status} - ${errorText}`);
+      if (response.status === 429) {
+        throw new Error('API rate limit exceeded. Please try again in a few minutes.');
+      } else if (response.status === 401) {
+        throw new Error('Invalid API key. Please check your Gemini API configuration.');
+      } else if (response.status >= 500) {
+        throw new Error('AI service is temporarily unavailable. Please try again later.');
+      }
+      throw new Error(`AI request failed: ${response.status} - ${errorText}`);
     }
 
     const data = await response.json();
     
     if (!data.candidates || !data.candidates[0] || !data.candidates[0].content) {
-      throw new Error('Invalid response structure from AI');
+      throw new Error('Invalid response from AI service. Please try again.');
     }
 
     const content = data.candidates[0].content.parts[0].text;
     const cleanedContent = cleanJsonResponse(content);
     
     if (!cleanedContent || (!cleanedContent.startsWith('[') && !cleanedContent.startsWith('{'))) {
-      throw new Error('Invalid JSON response from AI');
+      throw new Error('AI returned invalid data format. Please try again.');
     }
     
     try {
@@ -98,13 +106,19 @@ async function makeGeminiRequest(prompt: string, timeout: number = 15000): Promi
     } catch (parseError) {
       console.error('JSON Parse Error:', parseError);
       console.error('Cleaned content:', cleanedContent);
-      throw new Error('Failed to parse AI response as JSON');
+      throw new Error('Failed to process AI response. Please try again.');
     }
   } catch (error: any) {
     clearTimeout(timeoutId);
     if (error.name === 'AbortError') {
-      throw new Error('Request timeout - please try again');
+      throw new Error('Request timeout - the AI service is taking too long to respond. Please try again.');
     }
+    
+    // Network errors
+    if (error.message.includes('fetch')) {
+      throw new Error('Network connection error. Please check your internet connection and try again.');
+    }
+    
     throw error;
   }
 }
@@ -125,13 +139,17 @@ Return ONLY a JSON array with this exact format:
 
 No explanations, no markdown, just the JSON array.`;
 
-    const questions = await makeGeminiRequest(prompt, 10000);
+    const questions = await makeGeminiRequest(prompt, 20000);
     console.log('Parsed questions:', questions);
     
-    return Array.isArray(questions) ? questions : [];
-  } catch (error) {
+    if (!Array.isArray(questions)) {
+      throw new Error('Invalid questions format received from AI');
+    }
+    
+    return questions;
+  } catch (error: any) {
     console.error('Error generating questions:', error);
-    throw new Error('Failed to generate questions - please try again');
+    throw new Error(error.message || 'Failed to generate questions - please try again');
   }
 }
 
@@ -165,18 +183,18 @@ Return ONLY a JSON array of weeks with this exact format:
 
 No explanations, no markdown, just the JSON array.`;
 
-    const roadmapWeeks = await makeGeminiRequest(prompt, 20000);
+    const roadmapWeeks = await makeGeminiRequest(prompt, 30000);
     console.log('Parsed roadmap weeks:', roadmapWeeks);
     
     // Validate the roadmap structure
     if (!Array.isArray(roadmapWeeks)) {
-      throw new Error('Invalid roadmap structure - not an array');
+      throw new Error('Invalid roadmap format received from AI');
     }
     
     return roadmapWeeks;
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error generating roadmap:', error);
-    throw new Error('Failed to generate roadmap - please try again');
+    throw new Error(error.message || 'Failed to generate roadmap - please try again');
   }
 }
 
@@ -212,10 +230,15 @@ Return ONLY this JSON format:
 
 No explanations, no markdown, just the JSON object.`;
 
-    const lessonContent = await makeGeminiRequest(prompt, 15000);
+    const lessonContent = await makeGeminiRequest(prompt, 25000);
+    
+    if (!lessonContent || typeof lessonContent !== 'object') {
+      throw new Error('Invalid lesson content format received from AI');
+    }
+    
     return lessonContent;
-  } catch (error) {
-    console.error('Error generating lesson content - please try again');
-    throw new Error('Failed to generate lesson content - please try again');
+  } catch (error: any) {
+    console.error('Error generating lesson content:', error);
+    throw new Error(error.message || 'Failed to generate lesson content - please try again');
   }
 }
