@@ -13,6 +13,7 @@ interface AuthContextType {
   signOut: () => Promise<void>;
   updateProfile: (updates: Partial<Profile>) => Promise<void>;
   setIsNewUser: (value: boolean) => void;
+  retryProfileFetch: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -125,6 +126,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [isNewUser, setIsNewUser] = useState(false);
+  const [profileFetchAttempts, setProfileFetchAttempts] = useState(0);
   const { showError, showWarning } = useToast();
 
   useEffect(() => {
@@ -134,10 +136,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       try {
         console.log('Initializing auth...');
         
-        // Get initial session with increased timeout (45 seconds)
+        // Reduced timeout to 15 seconds for better UX
         const sessionPromise = supabase.auth.getSession();
         const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Connection timeout. Please check your internet connection and try refreshing the page.')), 45000)
+          setTimeout(() => reject(new Error('Connection timeout. Please check your internet connection and try refreshing the page.')), 15000)
         );
 
         const { data: { session }, error } = await Promise.race([
@@ -169,8 +171,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setUser(session?.user ?? null);
           
           if (session?.user) {
-            // Fetch profile immediately after setting user
-            await fetchProfile(session.user.id);
+            // Fetch profile with fallback mechanism
+            try {
+              await fetchProfile(session.user.id);
+            } catch (profileError) {
+              // Don't block the app if profile fetch fails
+              console.warn('Profile fetch failed during initialization, continuing without profile');
+              setProfile(null);
+            }
           } else {
             setProfile(null);
           }
@@ -214,8 +222,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           if (event === 'SIGNED_UP') {
             setIsNewUser(true);
           }
-          // Fetch profile immediately when user signs in
-          await fetchProfile(session.user.id);
+          // Fetch profile with fallback mechanism
+          try {
+            await fetchProfile(session.user.id);
+          } catch (profileError) {
+            // Don't block the app if profile fetch fails
+            console.warn('Profile fetch failed during auth state change, continuing without profile');
+            setProfile(null);
+          }
         } else {
           setProfile(null);
           setIsNewUser(false);
@@ -236,19 +250,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
   }, [showError, showWarning]);
 
-  const fetchProfile = async (userId: string) => {
+  const fetchProfile = async (userId: string, isRetry: boolean = false) => {
     try {
-      console.log('Fetching profile for user:', userId);
+      console.log('Fetching profile for user:', userId, isRetry ? '(retry)' : '');
       
-      // Use increased timeout (45 seconds) and maybeSingle() to handle missing profiles
+      // Reduced timeout to 10 seconds for better UX
       const profilePromise = supabase
         .from('profiles')
         .select('*')
         .eq('id', userId)
-        .maybeSingle(); // Use maybeSingle() instead of single() to handle missing profiles gracefully
+        .maybeSingle();
 
       const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Profile fetch timeout. Please try refreshing the page.')), 45000)
+        setTimeout(() => reject(new Error('Profile fetch timeout. Please try refreshing the page.')), 10000)
       );
 
       const { data, error } = await Promise.race([
@@ -258,35 +272,59 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (error) {
         console.error('Error fetching profile:', error);
+        setProfileFetchAttempts(prev => prev + 1);
+        
         const errorMsg = formatAuthError(error);
         if (errorMsg.includes('timeout')) {
-          showWarning('Loading Issue', errorMsg, {
-            label: 'Retry',
-            onClick: () => fetchProfile(userId)
-          });
+          // Only show warning if this isn't a retry and we haven't shown too many warnings
+          if (!isRetry && profileFetchAttempts < 2) {
+            showWarning('Loading Issue', 'Profile loading is taking longer than expected. You can continue using the app.', {
+              label: 'Retry',
+              onClick: () => retryProfileFetch()
+            });
+          }
         } else {
           showError('Profile Error', errorMsg);
         }
+        
+        // Don't throw error to prevent blocking the app
         setProfile(null);
-      } else if (data) {
+        return;
+      }
+
+      if (data) {
         console.log('Profile fetched successfully:', data);
         setProfile(data);
+        setProfileFetchAttempts(0); // Reset attempts on success
       } else {
         console.log('No profile found for user, this is normal for new users');
         setProfile(null);
       }
     } catch (error: any) {
       console.error('Profile fetch failed:', error);
+      setProfileFetchAttempts(prev => prev + 1);
+      
       const errorMsg = formatAuthError(error);
       if (errorMsg.includes('timeout')) {
-        showWarning('Loading Issue', errorMsg, {
-          label: 'Retry',
-          onClick: () => fetchProfile(userId)
-        });
+        // Only show warning if this isn't a retry and we haven't shown too many warnings
+        if (!isRetry && profileFetchAttempts < 2) {
+          showWarning('Loading Issue', 'Profile loading is taking longer than expected. You can continue using the app.', {
+            label: 'Retry',
+            onClick: () => retryProfileFetch()
+          });
+        }
       } else {
         showError('Profile Error', errorMsg);
       }
+      
+      // Don't throw error to prevent blocking the app
       setProfile(null);
+    }
+  };
+
+  const retryProfileFetch = async () => {
+    if (user) {
+      await fetchProfile(user.id, true);
     }
   };
 
@@ -361,6 +399,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signOut = async () => {
     try {
       setIsNewUser(false);
+      setProfileFetchAttempts(0); // Reset attempts on sign out
       const { error } = await supabase.auth.signOut();
       if (error) {
         throw error;
@@ -406,6 +445,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     signOut,
     updateProfile,
     setIsNewUser,
+    retryProfileFetch,
   };
 
   return (
