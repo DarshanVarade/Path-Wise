@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { generateQuestions, generateRoadmap } from '../../lib/gemini';
 import { supabase } from '../../lib/supabase';
+import { useToast } from '../../hooks/useToast';
 import { Target, MessageCircle, Map, CheckCircle, ArrowRight } from 'lucide-react';
 
 const OnboardingFlow: React.FC = () => {
@@ -12,23 +13,23 @@ const OnboardingFlow: React.FC = () => {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState<any>({});
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
 
   const { user, updateProfile } = useAuth();
+  const { showError, showSuccess } = useToast();
   const navigate = useNavigate();
 
   const handleGoalSubmit = async () => {
     if (!goal.trim()) return;
     
     setLoading(true);
-    setError('');
 
     try {
       const generatedQuestions = await generateQuestions(goal);
       setQuestions(generatedQuestions);
       setStep(2);
-    } catch (error) {
-      setError('Failed to generate questions. Please try again.');
+      showSuccess('Questions Generated', 'Your personalized questions are ready!');
+    } catch (error: any) {
+      showError('Generation Failed', error.message || 'Failed to generate questions. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -50,7 +51,6 @@ const OnboardingFlow: React.FC = () => {
 
   const handleGenerateRoadmap = async () => {
     setLoading(true);
-    setError('');
 
     try {
       const roadmapData = await generateRoadmap(goal, answers);
@@ -110,9 +110,10 @@ const OnboardingFlow: React.FC = () => {
       // Update user profile with goal
       await updateProfile({ goal });
 
+      showSuccess('Roadmap Created', 'Your personalized learning roadmap is ready!');
       navigate('/dashboard');
-    } catch (error) {
-      setError('Failed to generate roadmap. Please try again.');
+    } catch (error: any) {
+      showError('Creation Failed', error.message || 'Failed to generate roadmap. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -170,12 +171,6 @@ const OnboardingFlow: React.FC = () => {
                   rows={4}
                 />
               </div>
-
-              {error && (
-                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
-                  {error}
-                </div>
-              )}
 
               <button
                 onClick={handleGoalSubmit}
@@ -262,12 +257,6 @@ const OnboardingFlow: React.FC = () => {
                   ))}
                 </div>
               </div>
-
-              {error && (
-                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
-                  {error}
-                </div>
-              )}
 
               <button
                 onClick={handleGenerateRoadmap}

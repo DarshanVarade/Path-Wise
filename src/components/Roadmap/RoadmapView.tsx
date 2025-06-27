@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { supabase, Roadmap, Lesson, LessonCompletion } from '../../lib/supabase';
 import { generateRoadmap } from '../../lib/gemini';
+import { useToast } from '../../hooks/useToast';
 import { 
   Map, 
   Calendar, 
@@ -22,6 +23,7 @@ import {
 const RoadmapView: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { showError, showSuccess, showWarning } = useToast();
   const [roadmap, setRoadmap] = useState<Roadmap | null>(null);
   const [lessons, setLessons] = useState<Lesson[]>([]);
   const [completions, setCompletions] = useState<LessonCompletion[]>([]);
@@ -30,7 +32,6 @@ const RoadmapView: React.FC = () => {
   const [showAlterModal, setShowAlterModal] = useState(false);
   const [alterRequest, setAlterRequest] = useState('');
   const [processing, setProcessing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -40,8 +41,6 @@ const RoadmapView: React.FC = () => {
 
   const fetchRoadmapData = async () => {
     try {
-      setError(null);
-      
       // Fetch roadmap - get the most recent one instead of using .single()
       const { data: roadmapData, error: roadmapError } = await supabase
         .from('roadmaps')
@@ -84,7 +83,10 @@ const RoadmapView: React.FC = () => {
 
     } catch (error: any) {
       console.error('Error fetching roadmap data:', error);
-      setError(error.message || 'Failed to load roadmap data');
+      showError('Loading Failed', error.message || 'Failed to load roadmap data', {
+        label: 'Retry',
+        onClick: fetchRoadmapData
+      });
     } finally {
       setLoading(false);
     }
@@ -103,11 +105,12 @@ const RoadmapView: React.FC = () => {
 
       if (error) throw error;
 
+      showSuccess('Roadmap Deleted', 'Your roadmap has been deleted successfully.');
       // Navigate to onboarding to create a new roadmap
       navigate('/onboarding');
     } catch (error: any) {
       console.error('Error deleting roadmap:', error);
-      setError('Failed to delete roadmap. Please try again.');
+      showError('Delete Failed', 'Failed to delete roadmap. Please try again.');
     } finally {
       setProcessing(false);
       setShowDeleteModal(false);
@@ -185,13 +188,15 @@ Please modify the roadmap according to the user's request while maintaining the 
 
       if (progressError) throw progressError;
 
+      showSuccess('Roadmap Updated', 'Your roadmap has been successfully updated with your requested changes.');
+      
       // Refresh the data
       await fetchRoadmapData();
       setShowAlterModal(false);
       setAlterRequest('');
     } catch (error: any) {
       console.error('Error altering roadmap:', error);
-      setError('Failed to alter roadmap. Please try again.');
+      showError('Update Failed', error.message || 'Failed to alter roadmap. Please try again.');
     } finally {
       setProcessing(false);
     }
@@ -220,22 +225,6 @@ Please modify the roadmap according to the user's request while maintaining the 
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
           <p className="mt-4 text-gray-600">Loading roadmap...</p>
         </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="text-center py-12">
-        <Map className="mx-auto h-12 w-12 text-red-400" />
-        <h3 className="mt-2 text-sm font-medium text-gray-900">Error loading roadmap</h3>
-        <p className="mt-1 text-sm text-gray-500">{error}</p>
-        <button 
-          onClick={fetchRoadmapData}
-          className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-        >
-          Try Again
-        </button>
       </div>
     );
   }

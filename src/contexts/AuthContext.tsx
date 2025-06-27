@@ -1,19 +1,18 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User } from '@supabase/supabase-js';
 import { supabase, Profile } from '../lib/supabase';
+import { useToast } from '../hooks/useToast';
 
 interface AuthContextType {
   user: User | null;
   profile: Profile | null;
   loading: boolean;
   isNewUser: boolean;
-  error: string | null;
   signUp: (email: string, password: string, fullName: string) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
   updateProfile: (updates: Partial<Profile>) => Promise<void>;
   setIsNewUser: (value: boolean) => void;
-  clearError: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -126,7 +125,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [isNewUser, setIsNewUser] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const { showError, showWarning } = useToast();
 
   useEffect(() => {
     let mounted = true;
@@ -134,7 +133,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const initializeAuth = async () => {
       try {
         console.log('Initializing auth...');
-        setError(null);
         
         // Get initial session with increased timeout (45 seconds)
         const sessionPromise = supabase.auth.getSession();
@@ -150,7 +148,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (error) {
           console.error('Session error:', error);
           if (mounted) {
-            setError(formatAuthError(error));
+            const errorMsg = formatAuthError(error);
+            if (errorMsg.includes('timeout') || errorMsg.includes('network')) {
+              showWarning('Connection Issue', errorMsg, {
+                label: 'Retry',
+                onClick: () => window.location.reload()
+              });
+            } else {
+              showError('Authentication Error', errorMsg);
+            }
             setUser(null);
             setProfile(null);
             setLoading(false);
@@ -174,7 +180,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       } catch (error: any) {
         console.error('Auth initialization error:', error);
         if (mounted) {
-          setError(formatAuthError(error));
+          const errorMsg = formatAuthError(error);
+          if (errorMsg.includes('timeout') || errorMsg.includes('network')) {
+            showWarning('Connection Issue', errorMsg, {
+              label: 'Retry',
+              onClick: () => window.location.reload()
+            });
+          } else {
+            showError('Initialization Error', errorMsg);
+          }
           setUser(null);
           setProfile(null);
           setLoading(false);
@@ -193,7 +207,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       console.log('Auth state changed:', event, session?.user?.email);
       
       try {
-        setError(null);
         setUser(session?.user ?? null);
         
         if (session?.user) {
@@ -211,7 +224,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setLoading(false);
       } catch (error: any) {
         console.error('Auth state change error:', error);
-        setError(formatAuthError(error));
+        const errorMsg = formatAuthError(error);
+        showError('Authentication Error', errorMsg);
         setLoading(false);
       }
     });
@@ -220,7 +234,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       mounted = false;
       subscription.unsubscribe();
     };
-  }, []);
+  }, [showError, showWarning]);
 
   const fetchProfile = async (userId: string) => {
     try {
@@ -244,19 +258,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (error) {
         console.error('Error fetching profile:', error);
-        setError(formatAuthError(error));
+        const errorMsg = formatAuthError(error);
+        if (errorMsg.includes('timeout')) {
+          showWarning('Loading Issue', errorMsg, {
+            label: 'Retry',
+            onClick: () => fetchProfile(userId)
+          });
+        } else {
+          showError('Profile Error', errorMsg);
+        }
         setProfile(null);
       } else if (data) {
         console.log('Profile fetched successfully:', data);
         setProfile(data);
-        setError(null);
       } else {
         console.log('No profile found for user, this is normal for new users');
         setProfile(null);
       }
     } catch (error: any) {
       console.error('Profile fetch failed:', error);
-      setError(formatAuthError(error));
+      const errorMsg = formatAuthError(error);
+      if (errorMsg.includes('timeout')) {
+        showWarning('Loading Issue', errorMsg, {
+          label: 'Retry',
+          onClick: () => fetchProfile(userId)
+        });
+      } else {
+        showError('Profile Error', errorMsg);
+      }
       setProfile(null);
     }
   };
@@ -264,7 +293,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signUp = async (email: string, password: string, fullName: string) => {
     try {
       setLoading(true);
-      setError(null);
       setIsNewUser(true); // Set flag for new user
       
       const { data, error } = await supabase.auth.signUp({
@@ -289,8 +317,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch (error: any) {
       setIsNewUser(false);
       console.error('Sign up error:', error);
-      setError(formatAuthError(error));
-      throw new Error(formatAuthError(error));
+      const errorMsg = formatAuthError(error);
+      showError('Sign Up Failed', errorMsg);
+      throw new Error(errorMsg);
     } finally {
       setLoading(false);
     }
@@ -299,7 +328,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signIn = async (email: string, password: string) => {
     try {
       setLoading(true);
-      setError(null);
       setIsNewUser(false); // Clear flag for existing user
       console.log('Signing in user:', email);
       
@@ -324,14 +352,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch (error: any) {
       setLoading(false);
       console.error('Sign in error:', error);
-      setError(formatAuthError(error));
-      throw new Error(formatAuthError(error));
+      const errorMsg = formatAuthError(error);
+      showError('Sign In Failed', errorMsg);
+      throw new Error(errorMsg);
     }
   };
 
   const signOut = async () => {
     try {
-      setError(null);
       setIsNewUser(false);
       const { error } = await supabase.auth.signOut();
       if (error) {
@@ -339,8 +367,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     } catch (error: any) {
       console.error('Sign out error:', error);
-      setError(formatAuthError(error));
-      throw new Error(formatAuthError(error));
+      const errorMsg = formatAuthError(error);
+      showError('Sign Out Failed', errorMsg);
+      throw new Error(errorMsg);
     }
   };
 
@@ -348,7 +377,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (!user) throw new Error('No user logged in');
 
     try {
-      setError(null);
       const { error } = await supabase
         .from('profiles')
         .update(updates)
@@ -362,13 +390,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       await fetchProfile(user.id);
     } catch (error: any) {
       console.error('Update profile error:', error);
-      setError(formatAuthError(error));
-      throw new Error(formatAuthError(error));
+      const errorMsg = formatAuthError(error);
+      showError('Update Failed', errorMsg);
+      throw new Error(errorMsg);
     }
-  };
-
-  const clearError = () => {
-    setError(null);
   };
 
   const value = {
@@ -376,13 +401,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     profile,
     loading,
     isNewUser,
-    error,
     signUp,
     signIn,
     signOut,
     updateProfile,
     setIsNewUser,
-    clearError,
   };
 
   return (

@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { supabase, Lesson } from '../../lib/supabase';
 import { generateLessonContent } from '../../lib/gemini';
+import { useToast } from '../../hooks/useToast';
 import { ChevronLeft, ChevronRight, Clock, Target, CheckCircle, AlertCircle } from 'lucide-react';
 
 interface LessonContent {
@@ -27,6 +28,7 @@ const LessonView: React.FC = () => {
   const { lessonId } = useParams();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { showError, showSuccess } = useToast();
   
   const [lesson, setLesson] = useState<Lesson | null>(null);
   const [lessonContent, setLessonContent] = useState<LessonContent | null>(null);
@@ -37,7 +39,6 @@ const LessonView: React.FC = () => {
   const [testCompleted, setTestCompleted] = useState(false);
   const [score, setScore] = useState(0);
   const [allLessons, setAllLessons] = useState<Lesson[]>([]);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (lessonId && user) {
@@ -47,8 +48,6 @@ const LessonView: React.FC = () => {
 
   const fetchLesson = async () => {
     try {
-      setError(null);
-      
       // Fetch lesson details
       const { data: lessonData, error: lessonError } = await supabase
         .from('lessons')
@@ -83,7 +82,10 @@ const LessonView: React.FC = () => {
 
     } catch (error: any) {
       console.error('Error fetching lesson:', error);
-      setError(error.message || 'Failed to load lesson');
+      showError('Loading Failed', error.message || 'Failed to load lesson', {
+        label: 'Retry',
+        onClick: fetchLesson
+      });
     } finally {
       setLoading(false);
     }
@@ -166,9 +168,11 @@ const LessonView: React.FC = () => {
           .eq('id', progressData.id);
       }
 
+      showSuccess('Test Completed', `You scored ${finalScore}%! ${finalScore >= 70 ? 'Great job!' : 'Consider reviewing the material.'}`);
+
     } catch (error: any) {
       console.error('Error saving completion:', error);
-      setError('Failed to save test results. Please try again.');
+      showError('Save Failed', 'Failed to save test results. Please try again.');
     }
   };
 
@@ -199,27 +203,17 @@ const LessonView: React.FC = () => {
     );
   }
 
-  if (error) {
+  if (!lesson || !lessonContent) {
     return (
       <div className="text-center py-12">
         <AlertCircle className="mx-auto h-12 w-12 text-red-400" />
-        <h3 className="mt-2 text-sm font-medium text-gray-900">Error loading lesson</h3>
-        <p className="mt-1 text-sm text-gray-500">{error}</p>
+        <h3 className="mt-2 text-sm font-medium text-gray-900">Lesson not found</h3>
         <button 
           onClick={fetchLesson}
           className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
         >
           Try Again
         </button>
-      </div>
-    );
-  }
-
-  if (!lesson || !lessonContent) {
-    return (
-      <div className="text-center py-12">
-        <AlertCircle className="mx-auto h-12 w-12 text-red-400" />
-        <h3 className="mt-2 text-sm font-medium text-gray-900">Lesson not found</h3>
       </div>
     );
   }
