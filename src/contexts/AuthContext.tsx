@@ -116,6 +116,10 @@ const formatAuthError = (error: any): string => {
         return 'Database connection error. Please try again in a moment.';
       }
       
+      if (errorMessage.toLowerCase().includes('not_found') || errorMessage.toLowerCase().includes('404')) {
+        return 'Service temporarily unavailable. Please try again in a moment.';
+      }
+      
       // Return the original message if it's user-friendly, otherwise a generic message
       if (errorMessage && errorMessage.length < 100 && !errorMessage.includes('Error:')) {
         return errorMessage;
@@ -140,10 +144,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       try {
         console.log('Initializing auth...');
         
-        // Reduced timeout to 15 seconds for better UX
+        // Reduced timeout to 10 seconds for better UX
         const sessionPromise = supabase.auth.getSession();
         const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Auth session request timed out')), 15000)
+          setTimeout(() => reject(new Error('Auth session request timed out')), 10000)
         );
 
         const { data: { session }, error } = await Promise.race([
@@ -155,8 +159,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           console.error('Session error:', error);
           if (mounted) {
             const errorMsg = formatAuthError(error);
-            if (errorMsg.includes('timeout') || errorMsg.includes('network')) {
-              showWarning('Connection Issue', errorMsg, {
+            if (errorMsg.includes('timeout') || errorMsg.includes('network') || errorMsg.includes('unavailable')) {
+              showWarning('Connection Issue', 'Having trouble connecting. You can try refreshing the page.', {
                 label: 'Retry',
                 onClick: () => window.location.reload()
               });
@@ -175,14 +179,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setUser(session?.user ?? null);
           
           if (session?.user) {
-            // Fetch profile with fallback mechanism
-            try {
-              await fetchProfile(session.user.id);
-            } catch (profileError) {
-              // Don't block the app if profile fetch fails
+            // Fetch profile with fallback mechanism - don't block app startup
+            fetchProfile(session.user.id).catch(() => {
               console.warn('Profile fetch failed during initialization, continuing without profile');
-              setProfile(null);
-            }
+            });
           } else {
             setProfile(null);
           }
@@ -193,8 +193,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         console.error('Auth initialization error:', error);
         if (mounted) {
           const errorMsg = formatAuthError(error);
-          if (errorMsg.includes('timeout') || errorMsg.includes('network')) {
-            showWarning('Connection Issue', errorMsg, {
+          if (errorMsg.includes('timeout') || errorMsg.includes('network') || errorMsg.includes('unavailable')) {
+            showWarning('Connection Issue', 'Having trouble connecting. You can try refreshing the page.', {
               label: 'Retry',
               onClick: () => window.location.reload()
             });
@@ -226,14 +226,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           if (event === 'SIGNED_UP') {
             setIsNewUser(true);
           }
-          // Fetch profile with fallback mechanism
-          try {
-            await fetchProfile(session.user.id);
-          } catch (profileError) {
-            // Don't block the app if profile fetch fails
+          // Fetch profile with fallback mechanism - don't block auth flow
+          fetchProfile(session.user.id).catch(() => {
             console.warn('Profile fetch failed during auth state change, continuing without profile');
-            setProfile(null);
-          }
+          });
         } else {
           setProfile(null);
           setIsNewUser(false);
@@ -258,7 +254,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       console.log('Fetching profile for user:', userId, isRetry ? '(retry)' : '');
       
-      // Reduced timeout to 10 seconds for better UX
+      // Reduced timeout to 8 seconds for better UX
       const profilePromise = supabase
         .from('profiles')
         .select('*')
@@ -266,7 +262,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .maybeSingle();
 
       const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Profile fetch timed out')), 10000)
+        setTimeout(() => reject(new Error('Profile fetch timed out')), 8000)
       );
 
       const { data, error } = await Promise.race([
