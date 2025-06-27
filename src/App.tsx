@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Layout from './components/Layout/Layout';
 import AuthForm from './components/Auth/AuthForm';
+import LandingPage from './components/Landing/LandingPage';
 
 // Lazy load components for better performance
 const OnboardingFlow = React.lazy(() => import('./components/Onboarding/OnboardingFlow'));
@@ -47,6 +48,7 @@ const AppRoutes: React.FC = () => {
   return (
     <Suspense fallback={<LoadingSpinner />}>
       <Routes>
+        <Route path="/" element={<LandingPage />} />
         <Route 
           path="/auth" 
           element={user ? <Navigate to={isNewUser ? "/onboarding" : "/dashboard"} replace /> : <AuthForm />} 
@@ -119,7 +121,6 @@ const AppRoutes: React.FC = () => {
             </ProtectedRoute>
           } 
         />
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
       </Routes>
     </Suspense>
   );
