@@ -100,8 +100,12 @@ const formatAuthError = (error: any): string => {
         return 'Please enter a valid email address.';
       }
       
-      if (errorMessage.toLowerCase().includes('timeout') || errorMessage.toLowerCase().includes('network')) {
+      if (errorMessage.toLowerCase().includes('timeout') || errorMessage.toLowerCase().includes('timed out')) {
         return 'Connection timeout. Please check your internet connection and try again.';
+      }
+      
+      if (errorMessage.toLowerCase().includes('network')) {
+        return 'Network connection error. Please check your internet connection and try again.';
       }
       
       if (errorMessage.toLowerCase().includes('rate limit')) {
@@ -139,7 +143,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // Reduced timeout to 15 seconds for better UX
         const sessionPromise = supabase.auth.getSession();
         const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Connection timeout. Please check your internet connection and try refreshing the page.')), 15000)
+          setTimeout(() => reject(new Error('Auth session request timed out')), 15000)
         );
 
         const { data: { session }, error } = await Promise.race([
@@ -262,7 +266,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .maybeSingle();
 
       const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Profile fetch timeout. Please try refreshing the page.')), 10000)
+        setTimeout(() => reject(new Error('Profile fetch timed out')), 10000)
       );
 
       const { data, error } = await Promise.race([
