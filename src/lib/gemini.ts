@@ -200,33 +200,63 @@ No explanations, no markdown, just the JSON array.`;
 
 export async function generateLessonContent(lesson: any): Promise<any> {
   try {
-    const prompt = `Create lesson content for:
+    const prompt = `Create comprehensive lesson content for:
 Title: ${lesson.title}
 Objective: ${lesson.lessonObjective}
 Time: ${lesson.estimatedTime}
 
-Return ONLY this JSON format:
+Return ONLY this JSON format with enhanced interactive features:
 {
   "title": "${lesson.title}",
   "lessonObjective": "${lesson.lessonObjective}",
   "estimatedTime": "${lesson.estimatedTime}",
-  "lessonContent": "Detailed explanation in 3-4 paragraphs",
-  "keyConcepts": ["concept1", "concept2", "concept3"],
+  "lessonContent": "Detailed explanation in 4-5 paragraphs with step-by-step breakdown",
+  "keyConcepts": ["concept1", "concept2", "concept3", "concept4"],
   "exampleCode": [
     {
-      "description": "Example description",
-      "code": "code here",
-      "output": "expected output"
+      "description": "Example description with syntax highlighting",
+      "code": "well-formatted code with proper indentation",
+      "output": "expected output or result"
+    }
+  ],
+  "interactiveElements": [
+    {
+      "type": "playground",
+      "title": "Interactive Playground",
+      "description": "Try experimenting with the concepts",
+      "content": {}
+    },
+    {
+      "type": "demo",
+      "title": "Visual Demo",
+      "description": "See how changes affect outcomes",
+      "content": {}
     }
   ],
   "assessmentQuestions": [
     {
       "question": "Question text?",
+      "type": "multiple-choice",
       "options": ["Option A", "Option B", "Option C", "Option D"],
-      "answer": "Option A"
+      "answer": "Option A",
+      "explanation": "Detailed explanation of why this is correct"
+    },
+    {
+      "question": "Open-ended question?",
+      "type": "open-ended",
+      "answer": "Expected answer or key points",
+      "explanation": "What to look for in the answer"
     }
   ]
 }
+
+Include:
+- Interactive visual diagrams explanations
+- Live input-output playgrounds for experimentation
+- Dynamic element manipulation demos
+- Syntax-highlighted code blocks
+- Chapter-based quizzes with both multiple-choice and open-ended questions
+- Instant feedback with detailed explanations
 
 No explanations, no markdown, just the JSON object.`;
 

@@ -10,7 +10,6 @@ import {
   LogOut, 
   Menu, 
   X,
-  Compass,
   Shield
 } from 'lucide-react';
 
@@ -41,16 +40,18 @@ const Navbar: React.FC = () => {
   }
 
   return (
-    <nav className="bg-white shadow-lg border-b border-gray-200">
+    <nav className="bg-white dark:bg-dark-card shadow-lg border-b border-light-border dark:border-dark-border transition-colors duration-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           {/* Logo */}
           <div className="flex items-center">
             <Link to="/dashboard" className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
-                <Compass className="w-5 h-5 text-white" />
-              </div>
-              <span className="text-xl font-bold text-gray-900">PathWise</span>
+              <img 
+                src="https://github.com/DarshanVarade/Data/blob/main/PathWise-Logo.png?raw=true" 
+                alt="PathWise Logo" 
+                className="w-8 h-8"
+              />
+              <span className="text-xl font-bold text-light-text-primary dark:text-dark-text-primary">PathWise</span>
             </Link>
           </div>
 
@@ -65,8 +66,8 @@ const Navbar: React.FC = () => {
                   to={item.href}
                   className={`flex items-center space-x-1 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                     isActive
-                      ? 'bg-blue-100 text-blue-700'
-                      : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50'
+                      ? 'bg-light-primary/10 dark:bg-dark-primary/10 text-light-primary dark:text-dark-primary'
+                      : 'text-light-text-primary dark:text-dark-text-primary hover:text-light-primary dark:hover:text-dark-primary hover:bg-light-bg dark:hover:bg-dark-bg'
                   }`}
                 >
                   <Icon className="w-4 h-4" />
@@ -79,7 +80,7 @@ const Navbar: React.FC = () => {
           {/* User Menu */}
           <div className="hidden md:flex items-center space-x-4">
             <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-100 flex items-center justify-center">
+              <div className="w-8 h-8 rounded-full overflow-hidden bg-light-border dark:bg-dark-border flex items-center justify-center">
                 {profile?.avatar_url ? (
                   <img 
                     src={profile.avatar_url} 
@@ -87,16 +88,16 @@ const Navbar: React.FC = () => {
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <span className="text-white text-sm font-medium bg-gradient-to-br from-green-400 to-blue-500 w-full h-full flex items-center justify-center">
+                  <span className="text-white text-sm font-medium bg-gradient-to-br from-light-accent to-light-primary w-full h-full flex items-center justify-center">
                     {profile?.full_name?.charAt(0).toUpperCase() || 'U'}
                   </span>
                 )}
               </div>
-              <span className="text-sm text-gray-700">{profile?.full_name}</span>
+              <span className="text-sm text-light-text-primary dark:text-dark-text-primary">{profile?.full_name}</span>
             </div>
             <button
               onClick={handleSignOut}
-              className="flex items-center space-x-1 px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-red-600 hover:bg-red-50 transition-colors"
+              className="flex items-center space-x-1 px-3 py-2 rounded-md text-sm font-medium text-light-text-primary dark:text-dark-text-primary hover:text-light-error dark:hover:text-dark-error hover:bg-light-error/10 dark:hover:bg-dark-error/10 transition-colors"
             >
               <LogOut className="w-4 h-4" />
               <span>Sign Out</span>
@@ -107,7 +108,7 @@ const Navbar: React.FC = () => {
           <div className="md:hidden flex items-center">
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="inline-flex items-center justify-center p-2 rounded-md text-gray-700 hover:text-blue-600 hover:bg-gray-50 transition-colors"
+              className="inline-flex items-center justify-center p-2 rounded-md text-light-text-primary dark:text-dark-text-primary hover:text-light-primary dark:hover:text-dark-primary hover:bg-light-bg dark:hover:bg-dark-bg transition-colors"
             >
               {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
@@ -117,7 +118,7 @@ const Navbar: React.FC = () => {
 
       {/* Mobile menu */}
       {isMenuOpen && (
-        <div className="md:hidden bg-white border-t border-gray-200">
+        <div className="md:hidden bg-white dark:bg-dark-card border-t border-light-border dark:border-dark-border">
           <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
             {navItems.map((item) => {
               const Icon = item.icon;
@@ -129,8 +130,8 @@ const Navbar: React.FC = () => {
                   onClick={() => setIsMenuOpen(false)}
                   className={`flex items-center space-x-2 px-3 py-2 rounded-md text-base font-medium transition-colors ${
                     isActive
-                      ? 'bg-blue-100 text-blue-700'
-                      : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50'
+                      ? 'bg-light-primary/10 dark:bg-dark-primary/10 text-light-primary dark:text-dark-primary'
+                      : 'text-light-text-primary dark:text-dark-text-primary hover:text-light-primary dark:hover:text-dark-primary hover:bg-light-bg dark:hover:bg-dark-bg'
                   }`}
                 >
                   <Icon className="w-5 h-5" />
@@ -138,9 +139,9 @@ const Navbar: React.FC = () => {
                 </Link>
               );
             })}
-            <div className="border-t border-gray-200 pt-4 pb-1">
+            <div className="border-t border-light-border dark:border-dark-border pt-4 pb-1">
               <div className="flex items-center px-3 py-2">
-                <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-100 flex items-center justify-center">
+                <div className="w-8 h-8 rounded-full overflow-hidden bg-light-border dark:bg-dark-border flex items-center justify-center">
                   {profile?.avatar_url ? (
                     <img 
                       src={profile.avatar_url} 
@@ -148,19 +149,19 @@ const Navbar: React.FC = () => {
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <span className="text-white text-sm font-medium bg-gradient-to-br from-green-400 to-blue-500 w-full h-full flex items-center justify-center">
+                    <span className="text-white text-sm font-medium bg-gradient-to-br from-light-accent to-light-primary w-full h-full flex items-center justify-center">
                       {profile?.full_name?.charAt(0).toUpperCase() || 'U'}
                     </span>
                   )}
                 </div>
                 <div className="ml-3">
-                  <div className="text-base font-medium text-gray-800">{profile?.full_name}</div>
-                  <div className="text-sm text-gray-500">{profile?.email}</div>
+                  <div className="text-base font-medium text-light-text-primary dark:text-dark-text-primary">{profile?.full_name}</div>
+                  <div className="text-sm text-light-text-secondary dark:text-dark-text-secondary">{profile?.email}</div>
                 </div>
               </div>
               <button
                 onClick={handleSignOut}
-                className="flex items-center space-x-2 w-full px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-red-600 hover:bg-red-50 transition-colors"
+                className="flex items-center space-x-2 w-full px-3 py-2 rounded-md text-base font-medium text-light-text-primary dark:text-dark-text-primary hover:text-light-error dark:hover:text-dark-error hover:bg-light-error/10 dark:hover:bg-dark-error/10 transition-colors"
               >
                 <LogOut className="w-5 h-5" />
                 <span>Sign Out</span>

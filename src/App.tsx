@@ -1,6 +1,7 @@
 import React, { Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { ThemeProvider } from './contexts/ThemeContext';
 import Layout from './components/Layout/Layout';
 import AuthForm from './components/Auth/AuthForm';
 import LandingPage from './components/Landing/LandingPage';
@@ -17,10 +18,10 @@ const ProfileView = React.lazy(() => import('./components/Profile/ProfileView'))
 const AdminDashboard = React.lazy(() => import('./components/Admin/AdminDashboard'));
 
 const LoadingSpinner = () => (
-  <div className="flex items-center justify-center min-h-[400px] bg-gray-50">
+  <div className="flex items-center justify-center min-h-[400px] bg-light-bg dark:bg-dark-bg">
     <div className="text-center">
-      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-      <p className="mt-4 text-gray-600">Loading...</p>
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-light-primary dark:border-dark-primary mx-auto"></div>
+      <p className="mt-4 text-light-text-secondary dark:text-dark-text-secondary">Loading...</p>
     </div>
   </div>
 );
@@ -134,14 +135,16 @@ function App() {
   const { toasts, removeToast } = useToast();
 
   return (
-    <AuthProvider>
-      <Router>
-        <div className="min-h-screen bg-gray-50">
-          <AppRoutes />
-          <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
-        </div>
-      </Router>
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <Router>
+          <div className="min-h-screen bg-light-bg dark:bg-dark-bg transition-colors duration-200">
+            <AppRoutes />
+            <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
+          </div>
+        </Router>
+      </AuthProvider>
+    </ThemeProvider>
   );
 }
 
