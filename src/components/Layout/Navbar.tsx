@@ -28,6 +28,20 @@ const Navbar: React.FC = () => {
     }
   };
 
+  const handleLogoClick = () => {
+    if (location.pathname === '/dashboard' || location.pathname === '/lessons' || location.pathname === '/roadmap' || location.pathname === '/profile' || location.pathname === '/admin') {
+      // If user is in the app, go to landing page
+      navigate('/');
+    } else {
+      // If user is on landing page or auth, go to dashboard if logged in
+      if (user) {
+        navigate('/dashboard');
+      } else {
+        navigate('/');
+      }
+    }
+  };
+
   const navItems = [
     { name: 'Dashboard', href: '/dashboard', icon: Home },
     { name: 'Lessons', href: '/lessons', icon: BookOpen },
@@ -45,14 +59,14 @@ const Navbar: React.FC = () => {
         <div className="flex justify-between h-16">
           {/* Logo */}
           <div className="flex items-center">
-            <Link to="/dashboard" className="flex items-center space-x-2">
+            <button onClick={handleLogoClick} className="flex items-center space-x-2 hover:opacity-80 transition-opacity">
               <img 
-                src="https://github.com/DarshanVarade/Data/blob/main/PathWise-Logo.png?raw=true" 
+                src="https://github.com/DarshanVarade/Data/blob/main/PathWise-s-logo.png?raw=true" 
                 alt="PathWise Logo" 
-                className="w-8 h-8"
+                className="w-8 h-8 rounded-full border border-light-border dark:border-dark-border"
               />
               <span className="text-xl font-bold text-light-text-primary dark:text-dark-text-primary">PathWise</span>
-            </Link>
+            </button>
           </div>
 
           {/* Desktop Navigation */}
