@@ -23,10 +23,10 @@ const AuthForm: React.FC = () => {
 
     try {
       if (isLogin) {
-        await signIn(email, password);
+        await signIn(email.trim(), password.trim());
         // Navigation will be handled by the auth context and App.tsx routing
       } else {
-        await signUp(email, password, fullName);
+        await signUp(email.trim(), password.trim(), fullName.trim());
         // Navigation will be handled by the auth context and App.tsx routing
       }
       setRetryCount(0); // Reset retry count on success
@@ -105,6 +105,11 @@ const AuthForm: React.FC = () => {
                   </div>
                   <div className="flex-1">
                     <p className="text-sm font-medium">{error}</p>
+                    {error.toLowerCase().includes('invalid') && error.toLowerCase().includes('credentials') && (
+                      <p className="text-xs mt-1 opacity-75">
+                        Please check your email and password for typos, or create a new account if you haven't signed up yet.
+                      </p>
+                    )}
                     {isConnectionError && retryCount > 0 && (
                       <p className="text-xs mt-1 opacity-75">
                         Attempt {retryCount + 1} - Connection issues detected
@@ -139,7 +144,7 @@ const AuthForm: React.FC = () => {
                     type="text"
                     required
                     value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
+                    onChange={(e) => setFullName(e.target.value.trim())}
                     className="pl-10 w-full px-4 py-3 border border-light-border dark:border-dark-border bg-white dark:bg-dark-card text-light-text-primary dark:text-dark-text-primary rounded-lg focus:ring-2 focus:ring-light-primary dark:focus:ring-dark-primary focus:border-transparent transition-colors"
                     placeholder="Enter your full name"
                     disabled={loading}
@@ -159,7 +164,7 @@ const AuthForm: React.FC = () => {
                   type="email"
                   required
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => setEmail(e.target.value.trim())}
                   className="pl-10 w-full px-4 py-3 border border-light-border dark:border-dark-border bg-white dark:bg-dark-card text-light-text-primary dark:text-dark-text-primary rounded-lg focus:ring-2 focus:ring-light-primary dark:focus:ring-dark-primary focus:border-transparent transition-colors"
                   placeholder="Enter your email"
                   disabled={loading}
@@ -178,7 +183,7 @@ const AuthForm: React.FC = () => {
                   type={showPassword ? 'text' : 'password'}
                   required
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => setPassword(e.target.value.trim())}
                   className="pl-10 pr-10 w-full px-4 py-3 border border-light-border dark:border-dark-border bg-white dark:bg-dark-card text-light-text-primary dark:text-dark-text-primary rounded-lg focus:ring-2 focus:ring-light-primary dark:focus:ring-dark-primary focus:border-transparent transition-colors"
                   placeholder="Enter your password"
                   disabled={loading}
