@@ -280,14 +280,14 @@ const LandingPage: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div className="col-span-1 md:col-span-2">
-              <div className="flex items-center space-x-2 mb-4">
+              <Link to="/" className="flex items-center space-x-2 mb-4 hover:opacity-80 transition-opacity">
                 <img 
                   src="https://github.com/DarshanVarade/Data/blob/main/PathWise-s-logo.png?raw=true" 
                   alt="PathWise Logo" 
                   className="w-8 h-8"
                 />
                 <span className="text-xl font-bold">PathWise</span>
-              </div>
+              </Link>
               <p className="text-gray-400 dark:text-dark-text-secondary max-w-md">
                 Empowering learners worldwide with AI-driven personalized education. 
                 Transform your skills and achieve your goals with PathWise.

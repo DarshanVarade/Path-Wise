@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { generateQuestions, generateRoadmap } from '../../lib/gemini';
 import { supabase } from '../../lib/supabase';
@@ -124,11 +124,13 @@ const OnboardingFlow: React.FC = () => {
       <div className="max-w-2xl mx-auto">
         {/* Logo */}
         <div className="text-center mb-8">
-          <img 
-            src="https://github.com/DarshanVarade/Data/blob/main/PathWise-s-logo.png?raw=true" 
-            alt="PathWise Logo" 
-            className="w-16 h-16 mx-auto mb-4"
-          />
+          <Link to="/" className="inline-block hover:opacity-80 transition-opacity">
+            <img 
+              src="https://github.com/DarshanVarade/Data/blob/main/PathWise-s-logo.png?raw=true" 
+              alt="PathWise Logo" 
+              className="w-16 h-16 mx-auto mb-4"
+            />
+          </Link>
           <h1 className="text-2xl font-bold text-light-text-primary dark:text-dark-text-primary">Welcome to PathWise</h1>
         </div>
 

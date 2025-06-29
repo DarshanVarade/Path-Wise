@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { Eye, EyeOff, Mail, Lock, User, AlertCircle, Wifi, RefreshCw } from 'lucide-react';
 
 const AuthForm: React.FC = () => {
@@ -77,11 +77,13 @@ const AuthForm: React.FC = () => {
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
           <div className="flex justify-center">
-            <img 
-              src="https://github.com/DarshanVarade/Data/blob/main/PathWise-s-logo.png?raw=true" 
-              alt="PathWise Logo" 
-              className="w-16 h-16"
-            />
+            <Link to="/" className="hover:opacity-80 transition-opacity">
+              <img 
+                src="https://github.com/DarshanVarade/Data/blob/main/PathWise-s-logo.png?raw=true" 
+                alt="PathWise Logo" 
+                className="w-16 h-16"
+              />
+            </Link>
           </div>
           <h2 className="mt-6 text-3xl font-bold text-light-text-primary dark:text-dark-text-primary">
             {isLogin ? 'Welcome back to PathWise' : 'Join PathWise'}
