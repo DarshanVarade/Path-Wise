@@ -80,7 +80,7 @@ const AuthForm: React.FC = () => {
             <img 
               src="https://github.com/DarshanVarade/Data/blob/main/PathWise-s-logo.png?raw=true" 
               alt="PathWise Logo" 
-              className="w-16 h-16 rounded-full border border-light-border dark:border-dark-border"
+              className="w-16 h-16"
             />
           </div>
           <h2 className="mt-6 text-3xl font-bold text-light-text-primary dark:text-dark-text-primary">

@@ -127,7 +127,7 @@ const OnboardingFlow: React.FC = () => {
           <img 
             src="https://github.com/DarshanVarade/Data/blob/main/PathWise-s-logo.png?raw=true" 
             alt="PathWise Logo" 
-            className="w-16 h-16 rounded-full border border-light-border dark:border-dark-border mx-auto mb-4"
+            className="w-16 h-16 mx-auto mb-4"
           />
           <h1 className="text-2xl font-bold text-light-text-primary dark:text-dark-text-primary">Welcome to PathWise</h1>
         </div>

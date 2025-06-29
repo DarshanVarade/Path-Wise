@@ -63,7 +63,7 @@ const Navbar: React.FC = () => {
               <img 
                 src="https://github.com/DarshanVarade/Data/blob/main/PathWise-s-logo.png?raw=true" 
                 alt="PathWise Logo" 
-                className="w-8 h-8 rounded-full border border-light-border dark:border-dark-border"
+                className="w-8 h-8"
               />
               <span className="text-xl font-bold text-light-text-primary dark:text-dark-text-primary">PathWise</span>
             </button>
