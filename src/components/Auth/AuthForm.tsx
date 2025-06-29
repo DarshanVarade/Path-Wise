@@ -78,9 +78,9 @@ const AuthForm: React.FC = () => {
         <div className="text-center">
           <div className="flex justify-center">
             <img 
-              src="https://github.com/DarshanVarade/Data/blob/main/PathWise-Logo.png?raw=true" 
+              src="https://github.com/DarshanVarade/Data/blob/main/PathWise-s-logo.png?raw=true" 
               alt="PathWise Logo" 
-              className="w-16 h-16"
+              className="w-16 h-16 rounded-full border border-light-border dark:border-dark-border"
             />
           </div>
           <h2 className="mt-6 text-3xl font-bold text-light-text-primary dark:text-dark-text-primary">

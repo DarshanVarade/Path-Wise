@@ -107,9 +107,9 @@ const AdminDashboard: React.FC = () => {
   if (!profile?.is_admin) {
     return (
       <div className="text-center py-12">
-        <AlertCircle className="mx-auto h-12 w-12 text-red-400" />
-        <h3 className="mt-2 text-sm font-medium text-gray-900">Access Denied</h3>
-        <p className="mt-1 text-sm text-gray-500">You don't have admin privileges.</p>
+        <AlertCircle className="mx-auto h-12 w-12 text-light-error dark:text-dark-error" />
+        <h3 className="mt-2 text-sm font-medium text-light-text-primary dark:text-dark-text-primary">Access Denied</h3>
+        <p className="mt-1 text-sm text-light-text-secondary dark:text-dark-text-secondary">You don't have admin privileges.</p>
       </div>
     );
   }
@@ -117,7 +117,7 @@ const AdminDashboard: React.FC = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-light-primary dark:border-dark-primary"></div>
       </div>
     );
   }
@@ -145,8 +145,8 @@ const AdminDashboard: React.FC = () => {
       {message && (
         <div className={`p-4 rounded-lg flex items-center space-x-2 ${
           message.includes('successfully') 
-            ? 'bg-green-50 border border-green-200 text-green-700'
-            : 'bg-red-50 border border-red-200 text-red-700'
+            ? 'bg-light-success/10 dark:bg-dark-accent/10 border border-light-success dark:border-dark-accent text-light-success dark:text-dark-accent'
+            : 'bg-light-error/10 dark:bg-dark-error/10 border border-light-error dark:border-dark-error text-light-error dark:text-dark-error'
         }`}>
           {message.includes('successfully') ? (
             <CheckCircle className="w-5 h-5" />
@@ -159,86 +159,86 @@ const AdminDashboard: React.FC = () => {
 
       {/* Stats Overview */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+        <div className="bg-white dark:bg-dark-card rounded-xl shadow-sm p-6 border border-light-border dark:border-dark-border">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Total Users</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.totalUsers}</p>
+              <p className="text-sm font-medium text-light-text-secondary dark:text-dark-text-secondary">Total Users</p>
+              <p className="text-2xl font-bold text-light-text-primary dark:text-dark-text-primary">{stats.totalUsers}</p>
             </div>
-            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-              <Users className="w-6 h-6 text-blue-600" />
+            <div className="w-12 h-12 bg-light-primary/10 dark:bg-dark-primary/10 rounded-lg flex items-center justify-center">
+              <Users className="w-6 h-6 text-light-primary dark:text-dark-primary" />
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+        <div className="bg-white dark:bg-dark-card rounded-xl shadow-sm p-6 border border-light-border dark:border-dark-border">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Lessons Completed</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.totalLessons}</p>
+              <p className="text-sm font-medium text-light-text-secondary dark:text-dark-text-secondary">Lessons Completed</p>
+              <p className="text-2xl font-bold text-light-text-primary dark:text-dark-text-primary">{stats.totalLessons}</p>
             </div>
-            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-              <BookOpen className="w-6 h-6 text-green-600" />
+            <div className="w-12 h-12 bg-light-success/10 dark:bg-dark-accent/10 rounded-lg flex items-center justify-center">
+              <BookOpen className="w-6 h-6 text-light-success dark:text-dark-accent" />
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+        <div className="bg-white dark:bg-dark-card rounded-xl shadow-sm p-6 border border-light-border dark:border-dark-border">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Total Study Time</p>
-              <p className="text-2xl font-bold text-gray-900">{Math.floor(stats.totalTime / 60)}h</p>
+              <p className="text-sm font-medium text-light-text-secondary dark:text-dark-text-secondary">Total Study Time</p>
+              <p className="text-2xl font-bold text-light-text-primary dark:text-dark-text-primary">{Math.floor(stats.totalTime / 60)}h</p>
             </div>
-            <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-              <TrendingUp className="w-6 h-6 text-purple-600" />
+            <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/20 rounded-lg flex items-center justify-center">
+              <TrendingUp className="w-6 h-6 text-purple-600 dark:text-purple-400" />
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+        <div className="bg-white dark:bg-dark-card rounded-xl shadow-sm p-6 border border-light-border dark:border-dark-border">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Avg Accuracy</p>
-              <p className="text-2xl font-bold text-gray-900">{Math.round(stats.avgAccuracy)}%</p>
+              <p className="text-sm font-medium text-light-text-secondary dark:text-dark-text-secondary">Avg Accuracy</p>
+              <p className="text-2xl font-bold text-light-text-primary dark:text-dark-text-primary">{Math.round(stats.avgAccuracy)}%</p>
             </div>
-            <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
-              <TrendingUp className="w-6 h-6 text-orange-600" />
+            <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900/20 rounded-lg flex items-center justify-center">
+              <TrendingUp className="w-6 h-6 text-orange-600 dark:text-orange-400" />
             </div>
           </div>
         </div>
       </div>
 
       {/* Users Table */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100">
-        <div className="p-6 border-b border-gray-100">
-          <h2 className="text-lg font-semibold text-gray-900">Users & Progress</h2>
+      <div className="bg-white dark:bg-dark-card rounded-xl shadow-sm border border-light-border dark:border-dark-border">
+        <div className="p-6 border-b border-light-border dark:border-dark-border">
+          <h2 className="text-lg font-semibold text-light-text-primary dark:text-dark-text-primary">Users & Progress</h2>
         </div>
         
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-gray-50">
+            <thead className="bg-light-bg dark:bg-dark-bg">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-light-text-secondary dark:text-dark-text-secondary uppercase tracking-wider">
                   User
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-light-text-secondary dark:text-dark-text-secondary uppercase tracking-wider">
                   Goal
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-light-text-secondary dark:text-dark-text-secondary uppercase tracking-wider">
                   Progress
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-light-text-secondary dark:text-dark-text-secondary uppercase tracking-wider">
                   Time Spent
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-light-text-secondary dark:text-dark-text-secondary uppercase tracking-wider">
                   Accuracy
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-light-text-secondary dark:text-dark-text-secondary uppercase tracking-wider">
                   Actions
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white dark:bg-dark-card divide-y divide-light-border dark:divide-dark-border">
               {users.map((user) => {
                 const totalProgress = user.progress.reduce((sum, prog) =>
                   sum + (prog.completed_lessons / Math.max(prog.total_lessons, 1)) * 100, 0
@@ -248,10 +248,10 @@ const AdminDashboard: React.FC = () => {
                 const avgAccuracy = user.progress.reduce((sum, prog) => sum + prog.average_accuracy, 0) / Math.max(user.progress.length, 1);
 
                 return (
-                  <tr key={user.profile.id} className="hover:bg-gray-50">
+                  <tr key={user.profile.id} className="hover:bg-light-bg dark:hover:bg-dark-bg">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
-                        <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-100 flex items-center justify-center">
+                        <div className="w-10 h-10 rounded-full overflow-hidden bg-light-border dark:bg-dark-border flex items-center justify-center">
                           {user.profile.avatar_url ? (
                             <img 
                               src={user.profile.avatar_url} 
@@ -259,42 +259,42 @@ const AdminDashboard: React.FC = () => {
                               className="w-full h-full object-cover"
                             />
                           ) : (
-                            <Users className="w-5 h-5 text-gray-400" />
+                            <Users className="w-5 h-5 text-light-text-secondary dark:text-dark-text-secondary" />
                           )}
                         </div>
                         <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900">
+                          <div className="text-sm font-medium text-light-text-primary dark:text-dark-text-primary">
                             {user.profile.full_name || 'Unnamed User'}
                           </div>
-                          <div className="text-sm text-gray-500">{user.profile.email}</div>
+                          <div className="text-sm text-light-text-secondary dark:text-dark-text-secondary">{user.profile.email}</div>
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="text-sm text-gray-900 max-w-xs truncate">
+                      <div className="text-sm text-light-text-primary dark:text-dark-text-primary max-w-xs truncate">
                         {user.profile.goal || 'No goal set'}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
-                        <div className="w-16 bg-gray-200 rounded-full h-2 mr-2">
+                        <div className="w-16 bg-light-border dark:bg-dark-border rounded-full h-2 mr-2">
                           <div 
-                            className="bg-blue-600 h-2 rounded-full"
+                            className="bg-light-primary dark:bg-dark-primary h-2 rounded-full"
                             style={{ width: `${Math.min(totalProgress, 100)}%` }}
                           />
                         </div>
-                        <span className="text-sm text-gray-900">{Math.round(totalProgress)}%</span>
+                        <span className="text-sm text-light-text-primary dark:text-dark-text-primary">{Math.round(totalProgress)}%</span>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-light-text-primary dark:text-dark-text-primary">
                       {Math.floor(totalTime / 60)}h {totalTime % 60}m
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-light-text-primary dark:text-dark-text-primary">
                       {Math.round(avgAccuracy)}%
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <div className="flex items-center space-x-2">
-                        <button className="text-blue-600 hover:text-blue-900 p-1 rounded">
+                        <button className="text-light-primary dark:text-dark-primary hover:text-light-primary/80 dark:hover:text-dark-hover p-1 rounded">
                           <Eye className="w-4 h-4" />
                         </button>
                         <button 
@@ -302,7 +302,7 @@ const AdminDashboard: React.FC = () => {
                             setUserToDelete(user.profile);
                             setDeleteModalOpen(true);
                           }}
-                          className="text-red-600 hover:text-red-900 p-1 rounded"
+                          className="text-light-error dark:text-dark-error hover:text-light-error/80 dark:hover:text-dark-error/80 p-1 rounded"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -319,21 +319,21 @@ const AdminDashboard: React.FC = () => {
       {/* Delete Confirmation Modal */}
       {deleteModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+          <div className="bg-white dark:bg-dark-card rounded-lg p-6 max-w-md w-full mx-4">
             <div className="flex items-center space-x-3 mb-4">
-              <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
-                <AlertCircle className="w-5 h-5 text-red-600" />
+              <div className="w-10 h-10 bg-light-error/10 dark:bg-dark-error/10 rounded-full flex items-center justify-center">
+                <AlertCircle className="w-5 h-5 text-light-error dark:text-dark-error" />
               </div>
-              <h3 className="text-lg font-medium text-gray-900">Delete User</h3>
+              <h3 className="text-lg font-medium text-light-text-primary dark:text-dark-text-primary">Delete User</h3>
             </div>
-            <p className="text-sm text-gray-600 mb-6">
+            <p className="text-sm text-light-text-secondary dark:text-dark-text-secondary mb-6">
               Are you sure you want to delete <strong>{userToDelete?.full_name || userToDelete?.email}</strong>? 
               This action cannot be undone and will remove all their data.
             </p>
             <div className="flex items-center space-x-3">
               <button
                 onClick={handleDeleteUser}
-                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                className="px-4 py-2 bg-light-error dark:bg-dark-error text-white rounded-lg hover:bg-light-error/90 dark:hover:bg-dark-error/90 transition-colors"
               >
                 Delete User
               </button>
@@ -342,7 +342,7 @@ const AdminDashboard: React.FC = () => {
                   setDeleteModalOpen(false);
                   setUserToDelete(null);
                 }}
-                className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+                className="px-4 py-2 bg-light-bg dark:bg-dark-bg text-light-text-primary dark:text-dark-text-primary rounded-lg hover:bg-light-border/50 dark:hover:bg-dark-border/50 transition-colors"
               >
                 Cancel
               </button>

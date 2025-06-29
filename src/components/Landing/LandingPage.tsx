@@ -73,9 +73,9 @@ const LandingPage: React.FC = () => {
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-2">
               <img 
-                src="https://github.com/DarshanVarade/Data/blob/main/PathWise-Logo.png?raw=true" 
+                src="https://github.com/DarshanVarade/Data/blob/main/PathWise-s-logo.png?raw=true" 
                 alt="PathWise Logo" 
-                className="w-8 h-8"
+                className="w-8 h-8 rounded-full border border-light-border dark:border-dark-border"
               />
               <span className="text-xl font-bold text-light-text-primary dark:text-dark-text-primary">PathWise</span>
             </div>
@@ -282,9 +282,9 @@ const LandingPage: React.FC = () => {
             <div className="col-span-1 md:col-span-2">
               <div className="flex items-center space-x-2 mb-4">
                 <img 
-                  src="https://github.com/DarshanVarade/Data/blob/main/PathWise-Logo.png?raw=true" 
+                  src="https://github.com/DarshanVarade/Data/blob/main/PathWise-s-logo.png?raw=true" 
                   alt="PathWise Logo" 
-                  className="w-8 h-8"
+                  className="w-8 h-8 rounded-full border border-light-border dark:border-dark-border"
                 />
                 <span className="text-xl font-bold">PathWise</span>
               </div>

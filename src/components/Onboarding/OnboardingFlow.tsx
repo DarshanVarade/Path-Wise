@@ -120,27 +120,37 @@ const OnboardingFlow: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gradient-to-br from-light-bg via-white to-light-primary/5 dark:from-dark-bg dark:via-dark-card dark:to-dark-primary/5 py-12 px-4 sm:px-6 lg:px-8 transition-colors duration-200">
       <div className="max-w-2xl mx-auto">
+        {/* Logo */}
+        <div className="text-center mb-8">
+          <img 
+            src="https://github.com/DarshanVarade/Data/blob/main/PathWise-s-logo.png?raw=true" 
+            alt="PathWise Logo" 
+            className="w-16 h-16 rounded-full border border-light-border dark:border-dark-border mx-auto mb-4"
+          />
+          <h1 className="text-2xl font-bold text-light-text-primary dark:text-dark-text-primary">Welcome to PathWise</h1>
+        </div>
+
         {/* Progress Bar */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
-            <div className={`flex items-center space-x-2 ${step >= 1 ? 'text-blue-600' : 'text-gray-400'}`}>
+            <div className={`flex items-center space-x-2 ${step >= 1 ? 'text-light-primary dark:text-dark-primary' : 'text-light-text-secondary dark:text-dark-text-secondary'}`}>
               <Target className="w-5 h-5" />
               <span className="text-sm font-medium">Goal</span>
             </div>
-            <div className={`flex items-center space-x-2 ${step >= 2 ? 'text-blue-600' : 'text-gray-400'}`}>
+            <div className={`flex items-center space-x-2 ${step >= 2 ? 'text-light-primary dark:text-dark-primary' : 'text-light-text-secondary dark:text-dark-text-secondary'}`}>
               <MessageCircle className="w-5 h-5" />
               <span className="text-sm font-medium">Questions</span>
             </div>
-            <div className={`flex items-center space-x-2 ${step >= 3 ? 'text-blue-600' : 'text-gray-400'}`}>
+            <div className={`flex items-center space-x-2 ${step >= 3 ? 'text-light-primary dark:text-dark-primary' : 'text-light-text-secondary dark:text-dark-text-secondary'}`}>
               <Map className="w-5 h-5" />
               <span className="text-sm font-medium">Roadmap</span>
             </div>
           </div>
-          <div className="w-full bg-gray-200 rounded-full h-2">
+          <div className="w-full bg-light-border dark:bg-dark-border rounded-full h-2">
             <div 
-              className="bg-gradient-to-r from-blue-600 to-purple-600 h-2 rounded-full transition-all duration-300"
+              className="bg-gradient-to-r from-light-primary to-light-accent dark:from-dark-primary dark:to-dark-accent h-2 rounded-full transition-all duration-300"
               style={{ width: `${(step / 3) * 100}%` }}
             />
           </div>
@@ -148,18 +158,18 @@ const OnboardingFlow: React.FC = () => {
 
         {/* Step 1: Goal Input */}
         {step === 1 && (
-          <div className="bg-white rounded-xl shadow-lg p-8">
+          <div className="bg-white dark:bg-dark-card rounded-xl shadow-lg p-8 border border-light-border dark:border-dark-border">
             <div className="text-center mb-8">
-              <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
+              <div className="w-16 h-16 bg-gradient-to-br from-light-primary to-light-accent dark:from-dark-primary dark:to-dark-accent rounded-full flex items-center justify-center mx-auto mb-4">
                 <Target className="w-8 h-8 text-white" />
               </div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">What do you want to learn?</h2>
-              <p className="text-gray-600">Tell us your learning goal and we'll create a personalized roadmap for you.</p>
+              <h2 className="text-2xl font-bold text-light-text-primary dark:text-dark-text-primary mb-2">What do you want to learn?</h2>
+              <p className="text-light-text-secondary dark:text-dark-text-secondary">Tell us your learning goal and we'll create a personalized roadmap for you.</p>
             </div>
 
             <div className="space-y-6">
               <div>
-                <label htmlFor="goal" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="goal" className="block text-sm font-medium text-light-text-primary dark:text-dark-text-primary mb-2">
                   Your Learning Goal
                 </label>
                 <textarea
@@ -167,7 +177,7 @@ const OnboardingFlow: React.FC = () => {
                   value={goal}
                   onChange={(e) => setGoal(e.target.value)}
                   placeholder="e.g., I want to become a full-stack web developer, I want to learn machine learning, I want to master React..."
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                  className="w-full px-4 py-3 border border-light-border dark:border-dark-border bg-white dark:bg-dark-card text-light-text-primary dark:text-dark-text-primary rounded-lg focus:ring-2 focus:ring-light-primary dark:focus:ring-dark-primary focus:border-transparent transition-colors"
                   rows={4}
                 />
               </div>
@@ -175,7 +185,7 @@ const OnboardingFlow: React.FC = () => {
               <button
                 onClick={handleGoalSubmit}
                 disabled={!goal.trim() || loading}
-                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 px-4 rounded-lg font-medium hover:from-blue-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-[1.02] flex items-center justify-center space-x-2"
+                className="w-full bg-gradient-to-r from-light-primary to-light-accent dark:from-dark-primary dark:to-dark-accent text-white py-3 px-4 rounded-lg font-medium hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-light-primary dark:focus:ring-dark-primary focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-[1.02] flex items-center justify-center space-x-2"
               >
                 {loading ? (
                   <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white" />
@@ -192,20 +202,20 @@ const OnboardingFlow: React.FC = () => {
 
         {/* Step 2: Questions */}
         {step === 2 && questions.length > 0 && (
-          <div className="bg-white rounded-xl shadow-lg p-8">
+          <div className="bg-white dark:bg-dark-card rounded-xl shadow-lg p-8 border border-light-border dark:border-dark-border">
             <div className="text-center mb-8">
-              <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
+              <div className="w-16 h-16 bg-gradient-to-br from-light-primary to-light-accent dark:from-dark-primary dark:to-dark-accent rounded-full flex items-center justify-center mx-auto mb-4">
                 <MessageCircle className="w-8 h-8 text-white" />
               </div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">
+              <h2 className="text-2xl font-bold text-light-text-primary dark:text-dark-text-primary mb-2">
                 Question {currentQuestion + 1} of {questions.length}
               </h2>
-              <p className="text-gray-600">Help us personalize your learning experience</p>
+              <p className="text-light-text-secondary dark:text-dark-text-secondary">Help us personalize your learning experience</p>
             </div>
 
             <div className="space-y-6">
-              <div className="bg-gray-50 rounded-lg p-6">
-                <h3 className="text-lg font-medium text-gray-900 mb-4">
+              <div className="bg-light-bg dark:bg-dark-bg rounded-lg p-6">
+                <h3 className="text-lg font-medium text-light-text-primary dark:text-dark-text-primary mb-4">
                   {questions[currentQuestion]?.question}
                 </h3>
                 <div className="space-y-3">
@@ -213,15 +223,15 @@ const OnboardingFlow: React.FC = () => {
                     <button
                       key={index}
                       onClick={() => handleAnswerSelect(option)}
-                      className="w-full text-left p-4 bg-white border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-colors"
+                      className="w-full text-left p-4 bg-white dark:bg-dark-card border border-light-border dark:border-dark-border rounded-lg hover:border-light-primary dark:hover:border-dark-primary hover:bg-light-primary/5 dark:hover:bg-dark-primary/5 transition-colors"
                     >
-                      {option}
+                      <span className="text-light-text-primary dark:text-dark-text-primary">{option}</span>
                     </button>
                   ))}
                 </div>
               </div>
 
-              <div className="flex justify-between text-sm text-gray-500">
+              <div className="flex justify-between text-sm text-light-text-secondary dark:text-dark-text-secondary">
                 <span>Progress: {currentQuestion + 1}/{questions.length}</span>
                 <span>{Math.round(((currentQuestion + 1) / questions.length) * 100)}% complete</span>
               </div>
@@ -231,28 +241,28 @@ const OnboardingFlow: React.FC = () => {
 
         {/* Step 3: Generate Roadmap */}
         {step === 3 && (
-          <div className="bg-white rounded-xl shadow-lg p-8">
+          <div className="bg-white dark:bg-dark-card rounded-xl shadow-lg p-8 border border-light-border dark:border-dark-border">
             <div className="text-center mb-8">
-              <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
+              <div className="w-16 h-16 bg-gradient-to-br from-light-primary to-light-accent dark:from-dark-primary dark:to-dark-accent rounded-full flex items-center justify-center mx-auto mb-4">
                 <Map className="w-8 h-8 text-white" />
               </div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">Ready to create your roadmap!</h2>
-              <p className="text-gray-600">We'll generate a personalized learning roadmap based on your answers.</p>
+              <h2 className="text-2xl font-bold text-light-text-primary dark:text-dark-text-primary mb-2">Ready to create your roadmap!</h2>
+              <p className="text-light-text-secondary dark:text-dark-text-secondary">We'll generate a personalized learning roadmap based on your answers.</p>
             </div>
 
             <div className="space-y-6">
-              <div className="bg-gray-50 rounded-lg p-6">
-                <h3 className="text-lg font-medium text-gray-900 mb-4">Your Goal:</h3>
-                <p className="text-gray-700">{goal}</p>
+              <div className="bg-light-bg dark:bg-dark-bg rounded-lg p-6">
+                <h3 className="text-lg font-medium text-light-text-primary dark:text-dark-text-primary mb-4">Your Goal:</h3>
+                <p className="text-light-text-primary dark:text-dark-text-primary">{goal}</p>
               </div>
 
-              <div className="bg-gray-50 rounded-lg p-6">
-                <h3 className="text-lg font-medium text-gray-900 mb-4">Your Answers:</h3>
+              <div className="bg-light-bg dark:bg-dark-bg rounded-lg p-6">
+                <h3 className="text-lg font-medium text-light-text-primary dark:text-dark-text-primary mb-4">Your Answers:</h3>
                 <div className="space-y-2">
                   {Object.entries(answers).map(([question, answer]) => (
                     <div key={question} className="text-sm">
-                      <span className="font-medium text-gray-700">{question}:</span>
-                      <span className="text-gray-600 ml-2">{answer as string}</span>
+                      <span className="font-medium text-light-text-primary dark:text-dark-text-primary">{question}:</span>
+                      <span className="text-light-text-secondary dark:text-dark-text-secondary ml-2">{answer as string}</span>
                     </div>
                   ))}
                 </div>
@@ -261,7 +271,7 @@ const OnboardingFlow: React.FC = () => {
               <button
                 onClick={handleGenerateRoadmap}
                 disabled={loading}
-                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 px-4 rounded-lg font-medium hover:from-blue-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-[1.02] flex items-center justify-center space-x-2"
+                className="w-full bg-gradient-to-r from-light-primary to-light-accent dark:from-dark-primary dark:to-dark-accent text-white py-3 px-4 rounded-lg font-medium hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-light-primary dark:focus:ring-dark-primary focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-[1.02] flex items-center justify-center space-x-2"
               >
                 {loading ? (
                   <>
