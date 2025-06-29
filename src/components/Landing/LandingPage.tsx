@@ -9,7 +9,6 @@ import {
   Users, 
   Star,
   CheckCircle,
-  Zap,
   Brain,
   Award,
   Clock
@@ -109,11 +108,6 @@ const LandingPage: React.FC = () => {
         <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <div className="inline-flex items-center space-x-2 bg-blue-100 text-blue-700 px-4 py-2 rounded-full text-sm font-medium mb-8">
-              <Zap className="w-4 h-4" />
-              <span>AI-Powered Learning Platform</span>
-            </div>
-            
             <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-gray-900 mb-6 leading-tight">
               Your Personal
               <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent"> Learning</span>
@@ -133,13 +127,6 @@ const LandingPage: React.FC = () => {
                 <span>Start Learning Today</span>
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </Link>
-              
-              <button className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 font-medium transition-colors">
-                <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-md">
-                  <div className="w-0 h-0 border-l-[6px] border-l-blue-600 border-t-[4px] border-t-transparent border-b-[4px] border-b-transparent ml-1"></div>
-                </div>
-                <span>Watch Demo</span>
-              </button>
             </div>
           </div>
         </div>
