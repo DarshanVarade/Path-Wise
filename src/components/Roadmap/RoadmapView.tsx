@@ -222,8 +222,8 @@ Please modify the roadmap according to the user's request while maintaining the 
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading roadmap...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-light-primary dark:border-dark-primary mx-auto"></div>
+          <p className="mt-4 text-light-text-secondary dark:text-dark-text-secondary">Loading roadmap...</p>
         </div>
       </div>
     );
@@ -232,12 +232,12 @@ Please modify the roadmap according to the user's request while maintaining the 
   if (!roadmap) {
     return (
       <div className="text-center py-12">
-        <Map className="mx-auto h-12 w-12 text-gray-400" />
-        <h3 className="mt-2 text-sm font-medium text-gray-900">No roadmap found</h3>
-        <p className="mt-1 text-sm text-gray-500">Create a roadmap to get started.</p>
+        <Map className="mx-auto h-12 w-12 text-light-text-secondary dark:text-dark-text-secondary" />
+        <h3 className="mt-2 text-sm font-medium text-light-text-primary dark:text-dark-text-primary">No roadmap found</h3>
+        <p className="mt-1 text-sm text-light-text-secondary dark:text-dark-text-secondary">Create a roadmap to get started.</p>
         <Link
           to="/onboarding"
-          className="mt-4 inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          className="mt-4 inline-flex items-center px-4 py-2 bg-light-primary dark:bg-dark-primary text-white rounded-lg hover:bg-light-primary/90 dark:hover:bg-dark-hover"
         >
           Create Roadmap
         </Link>
@@ -250,7 +250,7 @@ Please modify the roadmap according to the user's request while maintaining the 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl p-6 text-white">
+      <div className="bg-gradient-to-r from-light-primary to-light-accent dark:from-dark-primary dark:to-dark-accent rounded-xl p-6 text-white">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold">Learning Roadmap</h1>
@@ -273,38 +273,38 @@ Please modify the roadmap according to the user's request while maintaining the 
 
       {/* Progress Overview and Actions */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+        <div className="lg:col-span-2 bg-white dark:bg-dark-card rounded-xl shadow-sm p-6 border border-light-border dark:border-dark-border">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-gray-900">Overall Progress</h2>
+            <h2 className="text-lg font-semibold text-light-text-primary dark:text-dark-text-primary">Overall Progress</h2>
             <div className="flex items-center space-x-2">
-              <TrendingUp className="w-5 h-5 text-green-600" />
-              <span className="text-lg font-bold text-green-600">{overallProgress}%</span>
+              <TrendingUp className="w-5 h-5 text-light-success dark:text-dark-accent" />
+              <span className="text-lg font-bold text-light-success dark:text-dark-accent">{overallProgress}%</span>
             </div>
           </div>
-          <div className="w-full bg-gray-200 rounded-full h-3">
+          <div className="w-full bg-light-border dark:bg-dark-border rounded-full h-3">
             <div 
-              className="bg-gradient-to-r from-green-500 to-blue-500 h-3 rounded-full transition-all duration-300"
+              className="bg-gradient-to-r from-light-success to-light-primary dark:from-dark-accent dark:to-dark-primary h-3 rounded-full transition-all duration-300"
               style={{ width: `${overallProgress}%` }}
             />
           </div>
-          <div className="mt-2 text-sm text-gray-600">
+          <div className="mt-2 text-sm text-light-text-secondary dark:text-dark-text-secondary">
             {completions.length} of {lessons.length} lessons completed
           </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Roadmap Actions</h3>
+        <div className="bg-white dark:bg-dark-card rounded-xl shadow-sm p-6 border border-light-border dark:border-dark-border">
+          <h3 className="text-lg font-semibold text-light-text-primary dark:text-dark-text-primary mb-4">Roadmap Actions</h3>
           <div className="space-y-3">
             <button
               onClick={() => setShowAlterModal(true)}
-              className="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              className="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-light-primary dark:bg-dark-primary text-white rounded-lg hover:bg-light-primary/90 dark:hover:bg-dark-hover transition-colors"
             >
               <Edit className="w-4 h-4" />
               <span>Alter Roadmap</span>
             </button>
             <button
               onClick={() => setShowDeleteModal(true)}
-              className="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+              className="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-light-error dark:bg-dark-error text-white rounded-lg hover:bg-light-error/90 dark:hover:bg-dark-error/90 transition-colors"
             >
               <Trash2 className="w-4 h-4" />
               <span>Delete Roadmap</span>
@@ -321,44 +321,44 @@ Please modify the roadmap according to the user's request while maintaining the 
           const weekProgress = getWeekProgress({ ...week, weekNumber });
 
           return (
-            <div key={weekIndex} className="bg-white rounded-xl shadow-sm border border-gray-100">
-              <div className="p-6 border-b border-gray-100">
+            <div key={weekIndex} className="bg-white dark:bg-dark-card rounded-xl shadow-sm border border-light-border dark:border-dark-border">
+              <div className="p-6 border-b border-light-border dark:border-dark-border">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center space-x-3">
                     <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                      weekProgress === 100 ? 'bg-green-100' : 
-                      weekProgress > 0 ? 'bg-blue-100' : 'bg-gray-100'
+                      weekProgress === 100 ? 'bg-light-success/10 dark:bg-dark-accent/10' : 
+                      weekProgress > 0 ? 'bg-light-primary/10 dark:bg-dark-primary/10' : 'bg-light-border dark:bg-dark-border'
                     }`}>
                       {weekProgress === 100 ? (
-                        <CheckCircle className="w-5 h-5 text-green-600" />
+                        <CheckCircle className="w-5 h-5 text-light-success dark:text-dark-accent" />
                       ) : (
                         <Calendar className={`w-5 h-5 ${
-                          weekProgress > 0 ? 'text-blue-600' : 'text-gray-400'
+                          weekProgress > 0 ? 'text-light-primary dark:text-dark-primary' : 'text-light-text-secondary dark:text-dark-text-secondary'
                         }`} />
                       )}
                     </div>
                     <div>
-                      <h3 className="text-lg font-semibold text-gray-900">
+                      <h3 className="text-lg font-semibold text-light-text-primary dark:text-dark-text-primary">
                         Week {weekNumber}: {week.title}
                       </h3>
-                      <p className="text-sm text-gray-600">
+                      <p className="text-sm text-light-text-secondary dark:text-dark-text-secondary">
                         {weekLessons.length} lessons • {weekProgress}% complete
                       </p>
                     </div>
                   </div>
                   <div className="hidden md:block">
                     <div className="text-right">
-                      <div className="text-2xl font-bold text-gray-900">{weekProgress}%</div>
-                      <div className="text-xs text-gray-500">Complete</div>
+                      <div className="text-2xl font-bold text-light-text-primary dark:text-dark-text-primary">{weekProgress}%</div>
+                      <div className="text-xs text-light-text-secondary dark:text-dark-text-secondary">Complete</div>
                     </div>
                   </div>
                 </div>
                 
-                <div className="w-full bg-gray-200 rounded-full h-2">
+                <div className="w-full bg-light-border dark:bg-dark-border rounded-full h-2">
                   <div 
                     className={`h-2 rounded-full transition-all duration-300 ${
-                      weekProgress === 100 ? 'bg-green-500' : 
-                      weekProgress > 0 ? 'bg-blue-500' : 'bg-gray-300'
+                      weekProgress === 100 ? 'bg-light-success dark:bg-dark-accent' : 
+                      weekProgress > 0 ? 'bg-light-primary dark:bg-dark-primary' : 'bg-light-border dark:bg-dark-border'
                     }`}
                     style={{ width: `${weekProgress}%` }}
                   />
@@ -374,22 +374,20 @@ Please modify the roadmap according to the user's request while maintaining the 
                     return (
                       <div
                         key={topicIndex}
-                        className={`border rounded-lg p-4 transition-all duration-200 ${
-                          lesson ? 'border-gray-200 hover:border-blue-300 hover:shadow-md' : 'border-gray-100 bg-gray-50'
-                        }`}
+                        className="border border-light-border dark:border-dark-border bg-white dark:bg-dark-card rounded-lg p-4 transition-all duration-200 hover:border-light-primary dark:hover:border-dark-primary hover:shadow-md"
                       >
                         <div className="flex items-start justify-between mb-3">
                           <div className="flex-1">
-                            <h4 className="font-medium text-gray-900">{topic.title}</h4>
-                            <p className="text-sm text-gray-600 mt-1">{topic.lessonObjective}</p>
+                            <h4 className="font-medium text-light-text-primary dark:text-dark-text-primary">{topic.title}</h4>
+                            <p className="text-sm text-light-text-secondary dark:text-dark-text-secondary mt-1">{topic.lessonObjective}</p>
                           </div>
                           {isCompleted && (
-                            <CheckCircle className="w-5 h-5 text-green-500 ml-2" />
+                            <CheckCircle className="w-5 h-5 text-light-success dark:text-dark-accent ml-2" />
                           )}
                         </div>
 
                         <div className="flex items-center justify-between">
-                          <div className="flex items-center space-x-2 text-sm text-gray-500">
+                          <div className="flex items-center space-x-2 text-sm text-light-text-secondary dark:text-dark-text-secondary">
                             <Clock className="w-4 h-4" />
                             <span>{topic.estimatedTime}</span>
                           </div>
@@ -397,7 +395,7 @@ Please modify the roadmap according to the user's request while maintaining the 
                           {lesson ? (
                             <Link
                               to={`/lessons/${lesson.id}`}
-                              className="flex items-center space-x-1 px-3 py-1.5 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors"
+                              className="flex items-center space-x-1 px-3 py-1.5 bg-light-primary dark:bg-dark-primary text-white text-sm rounded-lg hover:bg-light-primary/90 dark:hover:bg-dark-hover transition-colors"
                             >
                               {isCompleted ? (
                                 <>
@@ -412,7 +410,7 @@ Please modify the roadmap according to the user's request while maintaining the 
                               )}
                             </Link>
                           ) : (
-                            <div className="px-3 py-1.5 bg-gray-200 text-gray-500 text-sm rounded-lg">
+                            <div className="px-3 py-1.5 bg-light-border dark:bg-dark-border text-light-text-secondary dark:text-dark-text-secondary text-sm rounded-lg">
                               Coming Soon
                             </div>
                           )}
@@ -430,21 +428,21 @@ Please modify the roadmap according to the user's request while maintaining the 
       {/* Delete Confirmation Modal */}
       {showDeleteModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+          <div className="bg-white dark:bg-dark-card rounded-lg p-6 max-w-md w-full mx-4">
             <div className="flex items-center space-x-3 mb-4">
-              <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
-                <AlertTriangle className="w-5 h-5 text-red-600" />
+              <div className="w-10 h-10 bg-light-error/10 dark:bg-dark-error/10 rounded-full flex items-center justify-center">
+                <AlertTriangle className="w-5 h-5 text-light-error dark:text-dark-error" />
               </div>
-              <h3 className="text-lg font-medium text-gray-900">Delete Roadmap</h3>
+              <h3 className="text-lg font-medium text-light-text-primary dark:text-dark-text-primary">Delete Roadmap</h3>
             </div>
-            <p className="text-sm text-gray-600 mb-6">
+            <p className="text-sm text-light-text-secondary dark:text-dark-text-secondary mb-6">
               Are you sure you want to delete your current roadmap? This action cannot be undone and will remove all your progress. You'll be redirected to create a new roadmap.
             </p>
             <div className="flex items-center space-x-3">
               <button
                 onClick={handleDeleteRoadmap}
                 disabled={processing}
-                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 transition-colors flex items-center justify-center space-x-2"
+                className="flex-1 px-4 py-2 bg-light-error dark:bg-dark-error text-white rounded-lg hover:bg-light-error/90 dark:hover:bg-dark-error/90 disabled:opacity-50 transition-colors flex items-center justify-center space-x-2"
               >
                 {processing ? (
                   <>
@@ -461,7 +459,7 @@ Please modify the roadmap according to the user's request while maintaining the 
               <button
                 onClick={() => setShowDeleteModal(false)}
                 disabled={processing}
-                className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 disabled:opacity-50 transition-colors"
+                className="flex-1 px-4 py-2 bg-light-bg dark:bg-dark-bg text-light-text-primary dark:text-dark-text-primary rounded-lg hover:bg-light-border/50 dark:hover:bg-dark-border/50 disabled:opacity-50 transition-colors"
               >
                 Cancel
               </button>
@@ -473,25 +471,25 @@ Please modify the roadmap according to the user's request while maintaining the 
       {/* Alter Roadmap Modal */}
       {showAlterModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-lg w-full mx-4">
+          <div className="bg-white dark:bg-dark-card rounded-lg p-6 max-w-lg w-full mx-4">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                  <Edit className="w-5 h-5 text-blue-600" />
+                <div className="w-10 h-10 bg-light-primary/10 dark:bg-dark-primary/10 rounded-full flex items-center justify-center">
+                  <Edit className="w-5 h-5 text-light-primary dark:text-dark-primary" />
                 </div>
-                <h3 className="text-lg font-medium text-gray-900">Alter Roadmap</h3>
+                <h3 className="text-lg font-medium text-light-text-primary dark:text-dark-text-primary">Alter Roadmap</h3>
               </div>
               <button
                 onClick={() => setShowAlterModal(false)}
                 disabled={processing}
-                className="text-gray-400 hover:text-gray-600"
+                className="text-light-text-secondary dark:text-dark-text-secondary hover:text-light-text-primary dark:hover:text-dark-text-primary"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
             
             <div className="mb-6">
-              <label htmlFor="alterRequest" className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="alterRequest" className="block text-sm font-medium text-light-text-primary dark:text-dark-text-primary mb-2">
                 What changes would you like to make to your roadmap?
               </label>
               <textarea
@@ -499,7 +497,7 @@ Please modify the roadmap according to the user's request while maintaining the 
                 value={alterRequest}
                 onChange={(e) => setAlterRequest(e.target.value)}
                 placeholder="e.g., Add more advanced topics, focus more on practical projects, include specific technologies..."
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-light-border dark:border-dark-border bg-white dark:bg-dark-card text-light-text-primary dark:text-dark-text-primary rounded-lg focus:ring-2 focus:ring-light-primary dark:focus:ring-dark-primary focus:border-transparent"
                 rows={4}
                 disabled={processing}
               />
@@ -509,7 +507,7 @@ Please modify the roadmap according to the user's request while maintaining the 
               <button
                 onClick={handleAlterRoadmap}
                 disabled={!alterRequest.trim() || processing}
-                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors flex items-center justify-center space-x-2"
+                className="flex-1 px-4 py-2 bg-light-primary dark:bg-dark-primary text-white rounded-lg hover:bg-light-primary/90 dark:hover:bg-dark-hover disabled:opacity-50 transition-colors flex items-center justify-center space-x-2"
               >
                 {processing ? (
                   <>
@@ -526,7 +524,7 @@ Please modify the roadmap according to the user's request while maintaining the 
               <button
                 onClick={() => setShowAlterModal(false)}
                 disabled={processing}
-                className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 disabled:opacity-50 transition-colors"
+                className="flex-1 px-4 py-2 bg-light-bg dark:bg-dark-bg text-light-text-primary dark:text-dark-text-primary rounded-lg hover:bg-light-border/50 dark:hover:bg-dark-border/50 disabled:opacity-50 transition-colors"
               >
                 Cancel
               </button>

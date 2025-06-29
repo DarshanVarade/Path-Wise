@@ -75,14 +75,25 @@ const LessonView: React.FC = () => {
 
   const fetchLesson = async () => {
     try {
-      // Fetch lesson details
+      console.log('Fetching lesson with ID:', lessonId);
+      
+      // Fetch lesson details with better error handling
       const { data: lessonData, error: lessonError } = await supabase
         .from('lessons')
         .select('*')
         .eq('id', lessonId)
         .single();
 
-      if (lessonError) throw lessonError;
+      if (lessonError) {
+        console.error('Lesson fetch error:', lessonError);
+        throw lessonError;
+      }
+      
+      if (!lessonData) {
+        throw new Error('Lesson not found');
+      }
+
+      console.log('Lesson data fetched:', lessonData);
       setLesson(lessonData);
 
       // Fetch all lessons for navigation
@@ -93,14 +104,21 @@ const LessonView: React.FC = () => {
         .order('week_number', { ascending: true })
         .order('order_index', { ascending: true });
 
-      if (allLessonsError) throw allLessonsError;
-      setAllLessons(allLessonsData);
+      if (allLessonsError) {
+        console.error('All lessons fetch error:', allLessonsError);
+        throw allLessonsError;
+      }
+      
+      console.log('All lessons fetched:', allLessonsData?.length || 0);
+      setAllLessons(allLessonsData || []);
 
       // Check if lesson content exists in localStorage
       const cachedContent = localStorage.getItem(`lesson_${lessonId}`);
       if (cachedContent) {
+        console.log('Using cached lesson content');
         setLessonContent(JSON.parse(cachedContent));
       } else {
+        console.log('Generating new lesson content');
         // Generate content from AI
         const content = await generateLessonContent(lessonData);
         setLessonContent(content);
