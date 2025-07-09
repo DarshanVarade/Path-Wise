@@ -351,39 +351,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         throw new Error('Failed to create user account. Please try again.');
       }
       
-      // Explicitly create profile record to ensure it exists before any foreign key references
+      // Profile will be created automatically by database trigger
       if (data.user) {
-        try {
-          const { error: profileError } = await supabase
-            .from('profiles')
-            .insert({
-              id: data.user.id,
-              email: data.user.email || email,
-              full_name: fullName,
-            });
-          
-          if (profileError) {
-            console.error('Profile creation error:', profileError);
-            // Don't throw here as the user account was created successfully
-            // The profile will be created by the database trigger as fallback
-          }
-          
-          // Explicitly fetch the profile to ensure it's loaded into state
-          await fetchProfile(data.user.id);
-          
-          // Only set isNewUser flag after profile is successfully loaded
-          setIsNewUser(true);
-        } catch (profileError) {
-          console.error('Failed to create profile:', profileError);
-          // Try to fetch profile even if creation failed (might exist from trigger)
-          try {
-            await fetchProfile(data.user.id);
-            setIsNewUser(true);
-          } catch (fetchError) {
-            console.error('Failed to fetch profile after creation error:', fetchError);
-            throw new Error('Failed to set up user profile. Please try signing in.');
-          }
-        }
+        // Fetch the profile created by the database trigger
+        await fetchProfile(data.user.id);
+        
+        // Set flag for new user
+        setIsNewUser(true);
       }
       
     } catch (error: any) {
