@@ -395,6 +395,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Explicitly fetch the profile to ensure it's loaded into state
       await fetchProfile(data.user.id);
       
+      // Clear new user flag for existing users
+      setIsNewUser(false);
+      
     } catch (error: any) {
       setLoading(false);
       console.error('Sign in error:', error);
