@@ -352,6 +352,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         throw new Error('Failed to create user account. Please try again.');
       }
       
+      // Explicitly create profile record to ensure it exists before any foreign key references
+      if (data.user) {
+        try {
+          const { error: profileError } = await supabase
+            .from('profiles')
+            .insert({
+              id: data.user.id,
+              email: data.user.email || email,
+              full_name: fullName,
+            });
+          
+          if (profileError) {
+            console.error('Profile creation error:', profileError);
+            // Don't throw here as the user account was created successfully
+            // The profile will be created by the database trigger as fallback
+          }
+        } catch (profileError) {
+          console.error('Failed to create profile:', profileError);
+          // Continue without throwing to not block the signup process
+        }
+      }
+      
     } catch (error: any) {
       setIsNewUser(false);
       console.error('Sign up error:', error);
@@ -418,7 +440,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const { error } = await supabase
         .from('profiles')
-        .update(updates)
+        .upsert({
+          id: user.id,
+          email: user.email || '',
+          ...updates
+        })
         .eq('id', user.id);
 
       if (error) {
