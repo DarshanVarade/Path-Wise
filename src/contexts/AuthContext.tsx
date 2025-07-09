@@ -331,7 +331,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signUp = async (email: string, password: string, fullName: string) => {
     try {
       setLoading(true);
-      setIsNewUser(true); // Set flag for new user
       
       const { data, error } = await supabase.auth.signUp({
         email,
@@ -368,9 +367,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             // Don't throw here as the user account was created successfully
             // The profile will be created by the database trigger as fallback
           }
+          
+          // Explicitly fetch the profile to ensure it's loaded into state
+          await fetchProfile(data.user.id);
+          
+          // Only set isNewUser flag after profile is successfully loaded
+          setIsNewUser(true);
         } catch (profileError) {
           console.error('Failed to create profile:', profileError);
-          // Continue without throwing to not block the signup process
+          // Try to fetch profile even if creation failed (might exist from trigger)
+          try {
+            await fetchProfile(data.user.id);
+            setIsNewUser(true);
+          } catch (fetchError) {
+            console.error('Failed to fetch profile after creation error:', fetchError);
+            throw new Error('Failed to set up user profile. Please try signing in.');
+          }
         }
       }
       
@@ -406,8 +418,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       console.log('Sign in successful, user:', data.user?.email);
       
-      // Wait a moment for the auth state change to trigger
-      await new Promise(resolve => setTimeout(resolve, 100));
+      // Explicitly fetch the profile to ensure it's loaded into state
+      await fetchProfile(data.user.id);
       
     } catch (error: any) {
       setLoading(false);
