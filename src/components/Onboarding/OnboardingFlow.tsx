@@ -113,7 +113,18 @@ const OnboardingFlow: React.FC = () => {
       showSuccess('Roadmap Created', 'Your personalized learning roadmap is ready!');
       navigate('/dashboard');
     } catch (error: any) {
-      showError('Creation Failed', error.message || 'Failed to generate roadmap. Please try again.');
+      const errorMessage = error.message || 'Failed to generate roadmap. Please try again.';
+      
+      if (errorMessage.includes('AI service is temporarily unavailable')) {
+        showError('Creation Failed', errorMessage, {
+          action: {
+            label: 'Retry',
+            onClick: handleGenerateRoadmap
+          }
+        });
+      } else {
+        showError('Creation Failed', errorMessage);
+      }
     } finally {
       setLoading(false);
     }
