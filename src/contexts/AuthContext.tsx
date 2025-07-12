@@ -139,13 +139,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     let mounted = true;
+    let sessionCheckTimeout: NodeJS.Timeout;
 
     const initializeAuth = async () => {
       try {
         console.log('Initializing auth...');
         
-        // Get session with proper error handling for deployed environments
-        const { data: { session }, error } = await supabase.auth.getSession();
+        // Add timeout for session check in deployed environments
+        const sessionPromise = supabase.auth.getSession();
+        const timeoutPromise = new Promise((_, reject) => {
+          sessionCheckTimeout = setTimeout(() => reject(new Error('Session check timeout')), 10000);
+        });
+
+        const { data: { session }, error } = await Promise.race([
+          sessionPromise,
+          timeoutPromise
+        ]) as any;
+
+        if (sessionCheckTimeout) clearTimeout(sessionCheckTimeout);
 
         if (error) {
           console.error('Session error:', error);
@@ -171,12 +182,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setUser(session?.user ?? null);
           
           if (session?.user) {
-            // For deployed environments, ensure profile is properly loaded
+            // Verify JWT token is valid
+            const { data: { user }, error: userError } = await supabase.auth.getUser();
+            
+            if (userError || !user) {
+              console.warn('Invalid session, signing out:', userError);
+              await supabase.auth.signOut();
+              setUser(null);
+              setProfile(null);
+              setLoading(false);
+              return;
+            }
+            
+            // Ensure profile is properly loaded
             try {
-              await fetchProfile(session.user.id);
+              await fetchProfile(user.id);
             } catch (error) {
               console.warn('Profile fetch failed during initialization:', error);
-              // Don't block app startup, but ensure we have basic user data
+              // Continue without profile for now
             }
           } else {
             setProfile(null);
@@ -186,18 +209,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
       } catch (error: any) {
         console.error('Auth initialization error:', error);
+        if (sessionCheckTimeout) clearTimeout(sessionCheckTimeout);
+        
         if (mounted) {
-          const errorMsg = formatAuthError(error);
-          if (errorMsg.includes('timeout') || errorMsg.includes('network') || errorMsg.includes('unavailable')) {
-            showWarning('Connection Issue', 'Having trouble connecting. You can try refreshing the page.', {
-              label: 'Retry',
-              onClick: () => window.location.reload()
-            });
+          if (error.message === 'Session check timeout') {
+            console.warn('Session check timed out, continuing without session');
+            setUser(null);
+            setProfile(null);
           } else {
-            showError('Initialization Error', errorMsg);
+            const errorMsg = formatAuthError(error);
+            if (errorMsg.includes('timeout') || errorMsg.includes('network') || errorMsg.includes('unavailable')) {
+              showWarning('Connection Issue', 'Having trouble connecting. You can try refreshing the page.', {
+                label: 'Retry',
+                onClick: () => window.location.reload()
+              });
+            } else {
+              showError('Initialization Error', errorMsg);
+            }
+            setUser(null);
+            setProfile(null);
           }
-          setUser(null);
-          setProfile(null);
           setLoading(false);
         }
       }
@@ -249,6 +280,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     return () => {
       mounted = false;
+      if (sessionCheckTimeout) clearTimeout(sessionCheckTimeout);
       subscription.unsubscribe();
     };
   }, [showError, showWarning]);

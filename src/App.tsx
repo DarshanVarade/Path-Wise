@@ -43,7 +43,7 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
 const AppRoutes: React.FC = () => {
   const { user, loading, isNewUser } = useAuth();
 
-  // Show loading spinner while auth is initializing
+  // Show loading spinner while auth is initializing (with timeout)
   if (loading) {
     return <LoadingSpinner />;
   }
@@ -54,7 +54,7 @@ const AppRoutes: React.FC = () => {
         <Route path="/" element={<LandingPage />} />
         <Route 
           path="/auth" 
-          element={user ? <Navigate to={isNewUser ? "/onboarding" : "/dashboard"} replace /> : <AuthForm />} 
+          element={user ? <Navigate to={isNewUser ? "/onboarding" : "/dashboard"} replace /> : <AuthForm />}
         />
         <Route 
           path="/onboarding" 
@@ -125,7 +125,7 @@ const AppRoutes: React.FC = () => {
           } 
         />
         {/* Catch all route for 404s */}
-        <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path="*" element={user ? <Navigate to="/dashboard" replace /> : <Navigate to="/" replace />} />
       </Routes>
     </Suspense>
   );
