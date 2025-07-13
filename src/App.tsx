@@ -43,8 +43,10 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
 const AppRoutes: React.FC = () => {
   const { user, loading, isNewUser } = useAuth();
 
-  // Show loading spinner while auth is initializing
-  if (loading) {
+  console.log("User:", user, "Loading:", loading);
+
+  // Temporary bypass for debugging
+  if (false) {
     return <LoadingSpinner />;
   }
 
