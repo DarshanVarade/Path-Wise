@@ -8,7 +8,7 @@ import LandingPage from './components/Landing/LandingPage';
 import ToastContainer from './components/UI/ToastContainer';
 import { useToast } from './hooks/useToast';
 
-// Lazy load components for better performance
+// Lazy load components
 const OnboardingFlow = React.lazy(() => import('./components/Onboarding/OnboardingFlow'));
 const Dashboard = React.lazy(() => import('./components/Dashboard/Dashboard'));
 const LessonsList = React.lazy(() => import('./components/Lessons/LessonsList'));
@@ -17,21 +17,8 @@ const RoadmapView = React.lazy(() => import('./components/Roadmap/RoadmapView'))
 const ProfileView = React.lazy(() => import('./components/Profile/ProfileView'));
 const AdminDashboard = React.lazy(() => import('./components/Admin/AdminDashboard'));
 
-const LoadingSpinner = () => (
-  <div className="flex items-center justify-center min-h-[400px] bg-light-bg dark:bg-dark-bg">
-    <div className="text-center">
-      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-light-primary dark:border-dark-primary mx-auto"></div>
-      <p className="mt-4 text-light-text-secondary dark:text-dark-text-secondary">Loading...</p>
-    </div>
-  </div>
-);
-
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { user, loading } = useAuth();
-
-  if (loading) {
-    return <LoadingSpinner />;
-  }
+  const { user } = useAuth();
 
   if (!user) {
     return <Navigate to="/auth" replace />;
@@ -41,93 +28,99 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
 };
 
 const AppRoutes: React.FC = () => {
-  const { user, loading, isNewUser } = useAuth();
-
-  // Show loading spinner while auth is initializing
-  if (loading) {
-    return <LoadingSpinner />;
-  }
+  const { user, isNewUser } = useAuth();
 
   return (
-    <Suspense fallback={<LoadingSpinner />}>
-      <Routes>
-        <Route path="/" element={<LandingPage />} />
-        <Route 
-          path="/auth" 
-          element={user ? <Navigate to={isNewUser ? "/onboarding" : "/dashboard"} replace /> : <AuthForm />} 
-        />
-        <Route 
-          path="/onboarding" 
-          element={
-            <ProtectedRoute>
+    <Routes>
+      <Route path="/" element={<LandingPage />} />
+      <Route
+        path="/auth"
+        element={user ? <Navigate to={isNewUser ? "/onboarding" : "/dashboard"} replace /> : <AuthForm />}
+      />
+      <Route
+        path="/onboarding"
+        element={
+          <ProtectedRoute>
+            <Suspense fallback={null}>
               <OnboardingFlow />
-            </ProtectedRoute>
-          } 
-        />
-        <Route 
-          path="/dashboard" 
-          element={
-            <ProtectedRoute>
-              <Layout>
+            </Suspense>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/dashboard"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <Suspense fallback={null}>
                 <Dashboard />
-              </Layout>
-            </ProtectedRoute>
-          } 
-        />
-        <Route 
-          path="/lessons" 
-          element={
-            <ProtectedRoute>
-              <Layout>
+              </Suspense>
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/lessons"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <Suspense fallback={null}>
                 <LessonsList />
-              </Layout>
-            </ProtectedRoute>
-          } 
-        />
-        <Route 
-          path="/lessons/:lessonId" 
-          element={
-            <ProtectedRoute>
-              <Layout>
+              </Suspense>
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/lessons/:lessonId"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <Suspense fallback={null}>
                 <LessonView />
-              </Layout>
-            </ProtectedRoute>
-          } 
-        />
-        <Route 
-          path="/roadmap" 
-          element={
-            <ProtectedRoute>
-              <Layout>
+              </Suspense>
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/roadmap"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <Suspense fallback={null}>
                 <RoadmapView />
-              </Layout>
-            </ProtectedRoute>
-          } 
-        />
-        <Route 
-          path="/profile" 
-          element={
-            <ProtectedRoute>
-              <Layout>
+              </Suspense>
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/profile"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <Suspense fallback={null}>
                 <ProfileView />
-              </Layout>
-            </ProtectedRoute>
-          } 
-        />
-        <Route 
-          path="/admin" 
-          element={
-            <ProtectedRoute>
-              <Layout>
+              </Suspense>
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <Suspense fallback={null}>
                 <AdminDashboard />
-              </Layout>
-            </ProtectedRoute>
-          } 
-        />
-        {/* Catch all route for 404s */}
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </Suspense>
+              </Suspense>
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
   );
 };
 
