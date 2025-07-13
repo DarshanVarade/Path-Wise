@@ -28,14 +28,20 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
 };
 
 const AppRoutes: React.FC = () => {
-  const { user, isNewUser } = useAuth();
+  const { user, isNewUser, loading } = useAuth();
 
   return (
     <Routes>
       <Route path="/" element={<LandingPage />} />
       <Route
         path="/auth"
-        element={user ? <Navigate to={isNewUser ? "/onboarding" : "/dashboard"} replace /> : <AuthForm />}
+        element={
+          loading ? null : user ? (
+            <Navigate to={isNewUser ? "/onboarding" : "/dashboard"} replace />
+          ) : (
+            <AuthForm />
+          )
+        }
       />
       <Route
         path="/onboarding"
