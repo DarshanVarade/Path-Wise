@@ -56,7 +56,7 @@ const Dashboard: React.FC = () => {
         .limit(1);
 
       const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Request timeout')), 60000)
+        setTimeout(() => reject(new Error('Request timeout')), 30000)
       );
 
       const { data: roadmapData, error: roadmapError } = await Promise.race([

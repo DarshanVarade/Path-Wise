@@ -144,8 +144,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       try {
         console.log('Initializing auth...');
         
-        // Get session with proper error handling for deployed environments
-        const { data: { session }, error } = await supabase.auth.getSession();
+        // Reduced timeout to 10 seconds for better UX
+        const sessionPromise = supabase.auth.getSession();
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Auth session request timed out')), 10000)
+        );
+
+        const { data: { session }, error } = await Promise.race([
+          sessionPromise,
+          timeoutPromise
+        ]) as any;
 
         if (error) {
           console.error('Session error:', error);
@@ -171,13 +179,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setUser(session?.user ?? null);
           
           if (session?.user) {
-            // For deployed environments, ensure profile is properly loaded
-            try {
-              await fetchProfile(session.user.id);
-            } catch (error) {
-              console.warn('Profile fetch failed during initialization:', error);
-              // Don't block app startup, but ensure we have basic user data
-            }
+            // Fetch profile with fallback mechanism - don't block app startup
+            fetchProfile(session.user.id).catch(() => {
+              console.warn('Profile fetch failed during initialization, continuing without profile');
+            });
           } else {
             setProfile(null);
           }
@@ -217,22 +222,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          // Handle different auth events properly
+          // Only set isNewUser flag for SIGNED_UP event
           if (event === 'SIGNED_UP') {
             setIsNewUser(true);
-          } else if (event === 'SIGNED_IN') {
-            setIsNewUser(false);
-          } else if (event === 'TOKEN_REFRESHED') {
-            // Don't change isNewUser flag on token refresh
-            console.log('Token refreshed successfully');
           }
-          
-          // Fetch profile for all auth events except sign out
-          try {
-            await fetchProfile(session.user.id);
-          } catch (error) {
-            console.warn('Profile fetch failed during auth state change:', error);
-          }
+          // Fetch profile with fallback mechanism - don't block auth flow
+          fetchProfile(session.user.id).catch(() => {
+            console.warn('Profile fetch failed during auth state change, continuing without profile');
+          });
         } else {
           setProfile(null);
           setIsNewUser(false);
@@ -257,12 +254,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       console.log('Fetching profile for user:', userId, isRetry ? '(retry)' : '');
       
-      // Fetch profile without timeout for better reliability in deployed environments
-      const { data, error } = await supabase
+      // Reduced timeout to 8 seconds for better UX
+      const profilePromise = supabase
         .from('profiles')
         .select('*')
         .eq('id', userId)
         .maybeSingle();
+
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Profile fetch timed out')), 8000)
+      );
+
+      const { data, error } = await Promise.race([
+        profilePromise,
+        timeoutPromise
+      ]) as any;
 
       if (error) {
         console.error('Error fetching profile:', error);
@@ -270,12 +276,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         
         const errorMsg = formatAuthError(error);
         if (errorMsg.includes('timeout')) {
-          console.warn('Profile fetch timeout, continuing without profile');
+          // Only show warning if this isn't a retry and we haven't shown too many warnings
+          if (!isRetry && profileFetchAttempts < 2) {
+            showWarning('Loading Issue', 'Profile loading is taking longer than expected. You can continue using the app.', {
+              label: 'Retry',
+              onClick: () => retryProfileFetch()
+            });
+          }
         } else {
-          console.error('Profile fetch error:', errorMsg);
+          showError('Profile Error', errorMsg);
         }
         
-        throw error; // Re-throw to be handled by caller
+        // Don't throw error to prevent blocking the app
+        setProfile(null);
+        return;
       }
 
       if (data) {
@@ -291,9 +305,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setProfileFetchAttempts(prev => prev + 1);
       
       const errorMsg = formatAuthError(error);
-      console.error('Profile fetch failed:', errorMsg);
+      if (errorMsg.includes('timeout')) {
+        // Only show warning if this isn't a retry and we haven't shown too many warnings
+        if (!isRetry && profileFetchAttempts < 2) {
+          showWarning('Loading Issue', 'Profile loading is taking longer than expected. You can continue using the app.', {
+            label: 'Retry',
+            onClick: () => retryProfileFetch()
+          });
+        }
+      } else {
+        showError('Profile Error', errorMsg);
+      }
       
-      throw error; // Re-throw to be handled by caller
+      // Don't throw error to prevent blocking the app
+      setProfile(null);
     }
   };
 
