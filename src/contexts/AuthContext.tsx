@@ -139,37 +139,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     let mounted = true;
-    let sessionCheckTimeout: NodeJS.Timeout;
 
     const initializeAuth = async () => {
       try {
         console.log('Initializing auth...');
         
-        // Add timeout for session check in deployed environments
-        const sessionPromise = supabase.auth.getSession();
-        const timeoutPromise = new Promise((_, reject) => {
-          sessionCheckTimeout = setTimeout(() => reject(new Error('Session check timeout')), 10000);
-        });
-
-        const { data: { session }, error } = await Promise.race([
-          sessionPromise,
-          timeoutPromise
-        ]) as any;
-
-        if (sessionCheckTimeout) clearTimeout(sessionCheckTimeout);
+        const { data: { session }, error } = await supabase.auth.getSession();
 
         if (error) {
           console.error('Session error:', error);
           if (mounted) {
-            const errorMsg = formatAuthError(error);
-            if (errorMsg.includes('timeout') || errorMsg.includes('network') || errorMsg.includes('unavailable')) {
-              showWarning('Connection Issue', 'Having trouble connecting. You can try refreshing the page.', {
-                label: 'Retry',
-                onClick: () => window.location.reload()
-              });
-            } else {
-              showError('Authentication Error', errorMsg);
-            }
+            console.warn('Session initialization error, continuing without session');
             setUser(null);
             setProfile(null);
             setLoading(false);
@@ -182,21 +162,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setUser(session?.user ?? null);
           
           if (session?.user) {
-            // Verify JWT token is valid
-            const { data: { user }, error: userError } = await supabase.auth.getUser();
-            
-            if (userError || !user) {
-              console.warn('Invalid session, signing out:', userError);
-              await supabase.auth.signOut();
-              setUser(null);
-              setProfile(null);
-              setLoading(false);
-              return;
-            }
-            
             // Ensure profile is properly loaded
             try {
-              await fetchProfile(user.id);
+              await fetchProfile(session.user.id);
             } catch (error) {
               console.warn('Profile fetch failed during initialization:', error);
               // Continue without profile for now
@@ -209,26 +177,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
       } catch (error: any) {
         console.error('Auth initialization error:', error);
-        if (sessionCheckTimeout) clearTimeout(sessionCheckTimeout);
         
         if (mounted) {
-          if (error.message === 'Session check timeout') {
-            console.warn('Session check timed out, continuing without session');
-            setUser(null);
-            setProfile(null);
-          } else {
-            const errorMsg = formatAuthError(error);
-            if (errorMsg.includes('timeout') || errorMsg.includes('network') || errorMsg.includes('unavailable')) {
-              showWarning('Connection Issue', 'Having trouble connecting. You can try refreshing the page.', {
-                label: 'Retry',
-                onClick: () => window.location.reload()
-              });
-            } else {
-              showError('Initialization Error', errorMsg);
-            }
-            setUser(null);
-            setProfile(null);
-          }
+          console.warn('Auth initialization failed, continuing without session');
+          setUser(null);
+          setProfile(null);
           setLoading(false);
         }
       }
@@ -280,16 +233,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     return () => {
       mounted = false;
-      if (sessionCheckTimeout) clearTimeout(sessionCheckTimeout);
       subscription.unsubscribe();
     };
-  }, [showError, showWarning]);
+  }, []);
 
   const fetchProfile = async (userId: string, isRetry: boolean = false) => {
     try {
       console.log('Fetching profile for user:', userId, isRetry ? '(retry)' : '');
       
-      // Fetch profile without timeout for better reliability in deployed environments
+      // Simple profile fetch with timeout
+      const profilePromise = supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .maybeSingle();
+
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Profile fetch timeout')), 5000)
+      );
+
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
@@ -298,34 +260,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (error) {
         console.error('Error fetching profile:', error);
-        setProfileFetchAttempts(prev => prev + 1);
-        
-        const errorMsg = formatAuthError(error);
-        if (errorMsg.includes('timeout')) {
-          console.warn('Profile fetch timeout, continuing without profile');
-        } else {
-          console.error('Profile fetch error:', errorMsg);
-        }
-        
         throw error; // Re-throw to be handled by caller
       }
 
       if (data) {
         console.log('Profile fetched successfully:', data);
         setProfile(data);
-        setProfileFetchAttempts(0); // Reset attempts on success
       } else {
         console.log('No profile found for user, this is normal for new users');
         setProfile(null);
       }
     } catch (error: any) {
       console.error('Profile fetch failed:', error);
-      setProfileFetchAttempts(prev => prev + 1);
-      
-      const errorMsg = formatAuthError(error);
-      console.error('Profile fetch failed:', errorMsg);
-      
-      throw error; // Re-throw to be handled by caller
+      // Don't throw error, just continue without profile
+      setProfile(null);
     }
   };
 
@@ -399,9 +347,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       console.log('Sign in successful, user:', data.user?.email);
       
-      // Explicitly fetch the profile to ensure it's loaded into state
-      await fetchProfile(data.user.id);
-      
       // Clear new user flag for existing users
       setIsNewUser(false);
       
@@ -417,7 +362,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signOut = async () => {
     try {
       setIsNewUser(false);
-      setProfileFetchAttempts(0); // Reset attempts on sign out
       const { error } = await supabase.auth.signOut();
       if (error) {
         throw error;

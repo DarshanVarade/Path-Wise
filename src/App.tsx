@@ -18,7 +18,7 @@ const ProfileView = React.lazy(() => import('./components/Profile/ProfileView'))
 const AdminDashboard = React.lazy(() => import('./components/Admin/AdminDashboard'));
 
 const LoadingSpinner = () => (
-  <div className="flex items-center justify-center min-h-[400px] bg-light-bg dark:bg-dark-bg">
+  <div className="flex items-center justify-center min-h-screen bg-light-bg dark:bg-dark-bg">
     <div className="text-center">
       <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-light-primary dark:border-dark-primary mx-auto"></div>
       <p className="mt-4 text-light-text-secondary dark:text-dark-text-secondary">Loading...</p>
@@ -43,7 +43,7 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
 const AppRoutes: React.FC = () => {
   const { user, loading, isNewUser } = useAuth();
 
-  // Show loading spinner while auth is initializing (with timeout)
+  // Show loading spinner while auth is initializing
   if (loading) {
     return <LoadingSpinner />;
   }
