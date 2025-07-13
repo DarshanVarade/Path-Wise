@@ -144,12 +144,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       try {
         console.log('Initializing auth...');
         
+        // Get session with proper error handling for deployed environments
         const { data: { session }, error } = await supabase.auth.getSession();
 
         if (error) {
           console.error('Session error:', error);
           if (mounted) {
-            console.warn('Session initialization error, continuing without session');
+            const errorMsg = formatAuthError(error);
+            if (errorMsg.includes('timeout') || errorMsg.includes('network') || errorMsg.includes('unavailable')) {
+              showWarning('Connection Issue', 'Having trouble connecting. You can try refreshing the page.', {
+                label: 'Retry',
+                onClick: () => window.location.reload()
+              });
+            } else {
+              showError('Authentication Error', errorMsg);
+            }
             setUser(null);
             setProfile(null);
             setLoading(false);
@@ -162,12 +171,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setUser(session?.user ?? null);
           
           if (session?.user) {
-            // Ensure profile is properly loaded
+            // For deployed environments, ensure profile is properly loaded
             try {
               await fetchProfile(session.user.id);
             } catch (error) {
               console.warn('Profile fetch failed during initialization:', error);
-              // Continue without profile for now
+              // Don't block app startup, but ensure we have basic user data
             }
           } else {
             setProfile(null);
@@ -177,9 +186,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
       } catch (error: any) {
         console.error('Auth initialization error:', error);
-        
         if (mounted) {
-          console.warn('Auth initialization failed, continuing without session');
+          const errorMsg = formatAuthError(error);
+          if (errorMsg.includes('timeout') || errorMsg.includes('network') || errorMsg.includes('unavailable')) {
+            showWarning('Connection Issue', 'Having trouble connecting. You can try refreshing the page.', {
+              label: 'Retry',
+              onClick: () => window.location.reload()
+            });
+          } else {
+            showError('Initialization Error', errorMsg);
+          }
           setUser(null);
           setProfile(null);
           setLoading(false);
@@ -235,23 +251,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       mounted = false;
       subscription.unsubscribe();
     };
-  }, []);
+  }, [showError, showWarning]);
 
   const fetchProfile = async (userId: string, isRetry: boolean = false) => {
     try {
       console.log('Fetching profile for user:', userId, isRetry ? '(retry)' : '');
       
-      // Simple profile fetch with timeout
-      const profilePromise = supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .maybeSingle();
-
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Profile fetch timeout')), 5000)
-      );
-
+      // Fetch profile without timeout for better reliability in deployed environments
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
@@ -260,20 +266,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (error) {
         console.error('Error fetching profile:', error);
+        setProfileFetchAttempts(prev => prev + 1);
+        
+        const errorMsg = formatAuthError(error);
+        if (errorMsg.includes('timeout')) {
+          console.warn('Profile fetch timeout, continuing without profile');
+        } else {
+          console.error('Profile fetch error:', errorMsg);
+        }
+        
         throw error; // Re-throw to be handled by caller
       }
 
       if (data) {
         console.log('Profile fetched successfully:', data);
         setProfile(data);
+        setProfileFetchAttempts(0); // Reset attempts on success
       } else {
         console.log('No profile found for user, this is normal for new users');
         setProfile(null);
       }
     } catch (error: any) {
       console.error('Profile fetch failed:', error);
-      // Don't throw error, just continue without profile
-      setProfile(null);
+      setProfileFetchAttempts(prev => prev + 1);
+      
+      const errorMsg = formatAuthError(error);
+      console.error('Profile fetch failed:', errorMsg);
+      
+      throw error; // Re-throw to be handled by caller
     }
   };
 
@@ -286,7 +306,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signUp = async (email: string, password: string, fullName: string) => {
     try {
       setLoading(true);
-      console.log('Starting sign up process for:', email);
       
       const { data, error } = await supabase.auth.signUp({
         email,
@@ -299,7 +318,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
       
       if (error) {
-        console.error('Supabase auth signup error:', error);
         throw error;
       }
       
@@ -308,54 +326,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         throw new Error('Failed to create user account. Please try again.');
       }
       
-      console.log('User created successfully:', data.user.id);
-      
-      // Set the user immediately
-      setUser(data.user);
-      setIsNewUser(true);
-      
-      // Create profile manually if trigger doesn't work
-      try {
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .insert({
-            id: data.user.id,
-            email: data.user.email!,
-            full_name: fullName,
-            is_admin: false
-          });
-        
-        if (profileError && !profileError.message.includes('duplicate')) {
-          console.error('Profile creation error:', profileError);
-        } else {
-          console.log('Profile created successfully');
-        }
-      } catch (profileErr) {
-        console.warn('Profile creation failed, but continuing:', profileErr);
-      }
-      
-      // Fetch the profile
+      // Profile will be created automatically by database trigger
       if (data.user) {
-        try {
-          await fetchProfile(data.user.id);
-        } catch (profileFetchError) {
-          console.warn('Profile fetch failed after creation:', profileFetchError);
-          // Set a basic profile to continue
-          setProfile({
-            id: data.user.id,
-            email: data.user.email!,
-            full_name: fullName,
-            is_admin: false,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          });
-        }
+        // Fetch the profile created by the database trigger
+        await fetchProfile(data.user.id);
+        
+        // Set flag for new user
+        setIsNewUser(true);
       }
       
     } catch (error: any) {
       setIsNewUser(false);
       console.error('Sign up error:', error);
       const errorMsg = formatAuthError(error);
+      showError('Sign Up Failed', errorMsg);
       throw new Error(errorMsg);
     } finally {
       setLoading(false);
@@ -365,6 +349,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signIn = async (email: string, password: string) => {
     try {
       setLoading(true);
+      setIsNewUser(false); // Clear flag for existing user
       console.log('Signing in user:', email);
       
       const { data, error } = await supabase.auth.signInWithPassword({
@@ -373,7 +358,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
       
       if (error) {
-        console.error('Sign in error:', error);
         throw error;
       }
       
@@ -383,29 +367,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       console.log('Sign in successful, user:', data.user?.email);
       
-      // Set user and clear new user flag for existing users
-      setUser(data.user);
+      // Explicitly fetch the profile to ensure it's loaded into state
+      await fetchProfile(data.user.id);
+      
+      // Clear new user flag for existing users
       setIsNewUser(false);
       
-      // Fetch profile for existing user
-      try {
-        await fetchProfile(data.user.id);
-      } catch (profileError) {
-        console.warn('Profile fetch failed during sign in:', profileError);
-      }
-      
     } catch (error: any) {
+      setLoading(false);
       console.error('Sign in error:', error);
       const errorMsg = formatAuthError(error);
+      showError('Sign In Failed', errorMsg);
       throw new Error(errorMsg);
-    } finally {
-      setLoading(false);
     }
   };
 
   const signOut = async () => {
     try {
       setIsNewUser(false);
+      setProfileFetchAttempts(0); // Reset attempts on sign out
       const { error } = await supabase.auth.signOut();
       if (error) {
         throw error;

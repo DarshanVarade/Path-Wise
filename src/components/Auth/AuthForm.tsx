@@ -23,17 +23,14 @@ const AuthForm: React.FC = () => {
 
     try {
       if (isLogin) {
-        console.log('Attempting sign in...');
         await signIn(email.trim(), password.trim());
-        console.log('Sign in successful, navigation should happen automatically');
+        // Navigation will be handled by the auth context and App.tsx routing
       } else {
-        console.log('Attempting sign up...');
         await signUp(email.trim(), password.trim(), fullName.trim());
-        console.log('Sign up successful, navigation should happen automatically');
+        // Navigation will be handled by the auth context and App.tsx routing
       }
       setRetryCount(0); // Reset retry count on success
     } catch (error: any) {
-      console.error('Auth form error:', error);
       const errorMessage = error.message || 'An unexpected error occurred';
       setError(errorMessage);
       

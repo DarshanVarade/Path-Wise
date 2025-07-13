@@ -19,7 +19,11 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     detectSessionInUrl: true,
     flowType: 'pkce'
   },
-  db: { schema: 'public' }
+  global: {
+    headers: {
+      'X-Client-Info': 'supabase-js-web'
+    }
+  }
 });
 
 // Test connection function
