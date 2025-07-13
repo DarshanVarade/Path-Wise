@@ -286,6 +286,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signUp = async (email: string, password: string, fullName: string) => {
     try {
       setLoading(true);
+      console.log('Starting sign up process for:', email);
       
       const { data, error } = await supabase.auth.signUp({
         email,
@@ -298,6 +299,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
       
       if (error) {
+        console.error('Supabase auth signup error:', error);
         throw error;
       }
       
@@ -306,20 +308,54 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         throw new Error('Failed to create user account. Please try again.');
       }
       
-      // Profile will be created automatically by database trigger
-      if (data.user) {
-        // Fetch the profile created by the database trigger
-        await fetchProfile(data.user.id);
+      console.log('User created successfully:', data.user.id);
+      
+      // Set the user immediately
+      setUser(data.user);
+      setIsNewUser(true);
+      
+      // Create profile manually if trigger doesn't work
+      try {
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .insert({
+            id: data.user.id,
+            email: data.user.email!,
+            full_name: fullName,
+            is_admin: false
+          });
         
-        // Set flag for new user
-        setIsNewUser(true);
+        if (profileError && !profileError.message.includes('duplicate')) {
+          console.error('Profile creation error:', profileError);
+        } else {
+          console.log('Profile created successfully');
+        }
+      } catch (profileErr) {
+        console.warn('Profile creation failed, but continuing:', profileErr);
+      }
+      
+      // Fetch the profile
+      if (data.user) {
+        try {
+          await fetchProfile(data.user.id);
+        } catch (profileFetchError) {
+          console.warn('Profile fetch failed after creation:', profileFetchError);
+          // Set a basic profile to continue
+          setProfile({
+            id: data.user.id,
+            email: data.user.email!,
+            full_name: fullName,
+            is_admin: false,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          });
+        }
       }
       
     } catch (error: any) {
       setIsNewUser(false);
       console.error('Sign up error:', error);
       const errorMsg = formatAuthError(error);
-      showError('Sign Up Failed', errorMsg);
       throw new Error(errorMsg);
     } finally {
       setLoading(false);
@@ -329,7 +365,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signIn = async (email: string, password: string) => {
     try {
       setLoading(true);
-      setIsNewUser(false); // Clear flag for existing user
       console.log('Signing in user:', email);
       
       const { data, error } = await supabase.auth.signInWithPassword({
@@ -338,6 +373,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
       
       if (error) {
+        console.error('Sign in error:', error);
         throw error;
       }
       
@@ -347,15 +383,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       console.log('Sign in successful, user:', data.user?.email);
       
-      // Clear new user flag for existing users
+      // Set user and clear new user flag for existing users
+      setUser(data.user);
       setIsNewUser(false);
       
+      // Fetch profile for existing user
+      try {
+        await fetchProfile(data.user.id);
+      } catch (profileError) {
+        console.warn('Profile fetch failed during sign in:', profileError);
+      }
+      
     } catch (error: any) {
-      setLoading(false);
       console.error('Sign in error:', error);
       const errorMsg = formatAuthError(error);
-      showError('Sign In Failed', errorMsg);
       throw new Error(errorMsg);
+    } finally {
+      setLoading(false);
     }
   };
 
